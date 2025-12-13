@@ -1,0 +1,85 @@
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { toast } from 'vue3-toastify'
+import AuthLayout from '../components/layout/AuthLayout.vue'
+import BaseInput from '../components/ui/BaseInput.vue'
+import BaseButton from '../components/ui/BaseButton.vue'
+import { EnvelopeIcon, ArrowLeftIcon, CheckBadgeIcon } from '@heroicons/vue/24/outline'
+
+const router = useRouter()
+const email = ref('')
+const errors = ref({})
+
+const validate = () => {
+  errors.value = {}
+  
+  if (!email.value) {
+    errors.value.email = 'Email address is required'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    errors.value.email = 'Please enter a valid email address'
+  }
+
+  const isValid = Object.keys(errors.value).length === 0
+  if (!isValid) {
+      toast.error(Object.values(errors.value)[0])
+  }
+  return isValid
+}
+
+const handleResetRequest = () => {
+  if (validate()) {
+    // Generate the reset link (pointing to the local reset-password route)
+    const resetLink = `${window.location.origin}/reset-password`
+    const subject = "Password Reset Request"
+    const body = `Click the following link to reset your password: ${resetLink}`
+    
+    // trigger default mail client to send the email
+    window.location.href = `mailto:${email.value}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    
+    // Show feedback on UI via Toast
+    toast.info(`Email client opened for ${email.value}. Please send the email.`)
+  }
+}
+</script>
+
+<template>
+  <AuthLayout 
+    title="Secure Account" 
+    subtitle="Recovery."
+    badgeText="Account Security"
+    badgeColor="text-green-400"
+    :badgeIcon="CheckBadgeIcon"
+    tipTitle="Health Insight"
+    tipText="'Start your day with a glass of water to boost hydration and energy, setting a positive tone for health.'"
+  >
+    <template #description>
+      We use bank-grade encryption to ensure your medical data and account credentials remain private and secure.
+    </template>
+
+    <div class="w-full">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">Forgot Password?</h2>
+      <p class="text-gray-500 mb-8">Enter the email address associated with your account and we'll send you a link to reset your password.</p>
+
+      <form @submit.prevent="handleResetRequest">
+        <BaseInput 
+          v-model="email"
+          label="Email Address"
+          placeholder="Enter your email"
+          type="email"
+          :icon="EnvelopeIcon"
+          :error="errors.email"
+        />
+
+        <BaseButton block type="submit">Send reset link</BaseButton>
+      </form>
+
+      <div class="mt-8 text-center">
+        <router-link to="/login" class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
+          <ArrowLeftIcon class="h-4 w-4 mr-2" />
+          Back to login
+        </router-link>
+      </div>
+    </div>
+  </AuthLayout>
+</template>
