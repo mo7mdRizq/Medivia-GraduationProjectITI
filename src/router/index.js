@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
-<<<<<<< HEAD
     history: createWebHistory(import.meta.env.BASE_URL),
     scrollBehavior(to, from, savedPosition) {
         if (savedPosition) {
@@ -42,15 +41,6 @@ const router = createRouter({
             meta: { title: 'Reset Password - Medivia' }
         }
     ]
-})
-
-router.beforeEach((to, from, next) => {
-    document.title = to.meta.title || 'Medivia - Medical Story. One Platform.'
-    next()
-=======
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [],
->>>>>>> files
 })
 
 export default router
