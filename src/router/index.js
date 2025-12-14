@@ -43,4 +43,25 @@ const router = createRouter({
     ]
 })
 
+router.beforeEach((to, from, next) => {
+    // 1. Update Title
+    document.title = to.meta.title || 'Medivia - Medical Story. One Platform.'
+
+    // 2. Access Control
+    const publicPages = ['/login', '/register', '/forgot-password', '/reset-password']
+    const authRequired = !publicPages.includes(to.path)
+    const loggedIn = localStorage.getItem('isAuthenticated') === 'true'
+
+    if (authRequired && !loggedIn) {
+        return next('/login')
+    }
+
+    // 3. Prevent logged-in users from visiting Auth pages
+    if (loggedIn && publicPages.includes(to.path) && to.path !== '/reset-password') {
+        return next('/')
+    }
+
+    next()
+})
+
 export default router

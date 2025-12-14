@@ -28,18 +28,28 @@ const validate = () => {
     errors.value.fullName = 'Full Name cannot contain numbers'
   }
 
-  // Email: Strict validation
+  // Email: Strict validation (Must contain Name AND Numbers before @, and end in .com)
+  // Regex Explanation:
+  // ^(?=.*[A-Za-z])(?=.*\d)  -> Lookahead ensures at least one letter and one digit exist
+  // [A-Za-z\d]+              -> The local part consists of letters and digits
+  // @                        -> Literal @
+  // [a-zA-Z]+                -> Domain name (letters)
+  // \.com$                   -> Must end in .com
+  const emailRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+@[a-zA-Z]+\.com$/
+  
   if (!email.value) {
     errors.value.email = 'Email address is required'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = 'Please enter a valid email address'
+  } else if (!emailRegex.test(email.value)) {
+    errors.value.email = 'Email must contain letters AND numbers before @, and end in .com (e.g., user123@gmail.com)'
   }
 
-  // Password
+  // Password: Must contain at least one letter
   if (!password.value) {
     errors.value.password = 'Password is required'
   } else if (password.value.length < 8) {
     errors.value.password = 'Password must be at least 8 characters'
+  } else if (!/[a-zA-Z]/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one letter'
   }
 
   // Confirm Password
@@ -62,8 +72,16 @@ const validate = () => {
 
 const handleRegister = () => {
   if (validate()) {
-    // Simulate API call
-    toast.success('Registration successful! Please login.')
+    // Save Registration Data
+    const userData = {
+      name: fullName.value,
+      email: email.value,
+      password: password.value // In a real app, this should NEVER be stored in plain text
+    }
+    
+    localStorage.setItem('registeredUser', JSON.stringify(userData))
+    
+    toast.success('Registration successful! Please login with your new credentials.')
     router.push('/login')
   }
 }

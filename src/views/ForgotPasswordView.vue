@@ -5,19 +5,24 @@ import { toast } from 'vue3-toastify'
 import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
-import { EnvelopeIcon, ArrowLeftIcon, CheckBadgeIcon } from '@heroicons/vue/24/outline'
+import { authApi } from '../api/mockAuth'
+import emailjs from '@emailjs/browser'
 
 const router = useRouter()
 const email = ref('')
+const isLoading = ref(false)
 const errors = ref({})
 
 const validate = () => {
   errors.value = {}
   
+  // Strict Email Regex: Name + Numbers before @, .com end
+  const emailRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+@[a-zA-Z]+\.com$/
+
   if (!email.value) {
     errors.value.email = 'Email address is required'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = 'Please enter a valid email address'
+  } else if (!emailRegex.test(email.value)) {
+    errors.value.email = 'Email must contain letters AND numbers before @, and end in .com'
   }
 
   const isValid = Object.keys(errors.value).length === 0
@@ -27,18 +32,51 @@ const validate = () => {
   return isValid
 }
 
-const handleResetRequest = () => {
+const handleResetRequest = async () => {
   if (validate()) {
-    // Generate the reset link (pointing to the local reset-password route)
-    const resetLink = `${window.location.origin}/reset-password`
-    const subject = "Password Reset Request"
-    const body = `Click the following link to reset your password: ${resetLink}`
-    
-    // trigger default mail client to send the email
-    window.location.href = `mailto:${email.value}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    
-    // Show feedback on UI via Toast
-    toast.info(`Email client opened for ${email.value}. Please send the email.`)
+    isLoading.value = true
+    try {
+      // 1. Validate Account Existence
+      const response = await authApi.requestPasswordReset(email.value)
+      
+      // 2. Prepare EmailJS Parameters
+      // TODO: Replace these placeholders with your actual EmailJS credentials
+      const serviceID = 'service_2xvwukn';
+      const templateID = 'template_ur3zlqu';
+      const publicKey = 'fnJIAKWvrKg1eD-Hn';
+
+      const templateParams = {
+        // Target Recipient (Admin) - Exhaustive list of potential keys to match your Template 'To Email' field
+        to_email: 'ahmedmakled2004@gmail.com',
+        recipient: 'ahmedmakled2004@gmail.com',
+        email: 'ahmedmakled2004@gmail.com',     // Common default
+        to: 'ahmedmakled2004@gmail.com',        // Common default
+        admin_email: 'ahmedmakled2004@gmail.com',
+
+        // Context
+        user_email: email.value,
+        reset_link: `${window.location.origin}/reset-password`,
+        message: `User (${email.value}) requested a password reset.`,
+        
+        // Standard fields
+        to_name: 'Admin',
+        from_name: 'Medivia System',
+        reply_to: email.value
+      };
+
+      // 3. Send Email
+      await emailjs.send(serviceID, templateID, templateParams, publicKey);
+
+      toast.success(`Request sent to system admin for ${email.value}`)
+
+    } catch (error) {
+      console.error("EmailJS Error details:", error)
+      // Check if it's our API error or EmailJS error
+      const errorMsg = error.text || error.message || JSON.stringify(error)
+      toast.error(`Send Failed: ${errorMsg}`)
+    } finally {
+      isLoading.value = false
+    }
   }
 }
 </script>
@@ -71,7 +109,10 @@ const handleResetRequest = () => {
           :error="errors.email"
         />
 
-        <BaseButton block type="submit">Send reset link</BaseButton>
+        <BaseButton block type="submit" :disabled="isLoading">
+          <span v-if="isLoading">Sending...</span>
+          <span v-else>Send reset link</span>
+        </BaseButton>
       </form>
 
       <div class="mt-8 text-center">

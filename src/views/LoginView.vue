@@ -41,23 +41,34 @@ const validate = () => {
 
 const handleLogin = () => {
   if (validate()) {
-    // Simulate Login
-    toast.success("Welcome back!", {
-        transition: toast.TRANSITIONS.ZOOM,
-    })
+    // Retrieve stored user
+    const storedUserFunc = localStorage.getItem('registeredUser')
     
-    // Set persistent auth state
-    localStorage.setItem('isAuthenticated', 'true')
-    // Extract name from email for demo user profile
-    const nameFromEmail = email.value.split('@')[0]
-    // Capitalize first letter
-    const formattedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1)
-    localStorage.setItem('userName', formattedName)
-    
-    // Slight delay to see the toast before redirect
-    setTimeout(() => {
-        router.push('/')
-    }, 500)
+    if (!storedUserFunc) {
+       toast.error("No account found. Please register first.")
+       return
+    }
+
+    const storedUser = JSON.parse(storedUserFunc)
+
+    // Check Credentials
+    if (email.value === storedUser.email && password.value === storedUser.password) {
+        toast.success(`Welcome back, ${storedUser.name}!`, {
+            transition: toast.TRANSITIONS.ZOOM,
+        })
+        
+        // Set persistent auth state
+        localStorage.setItem('isAuthenticated', 'true')
+        localStorage.setItem('userName', storedUser.name)
+        localStorage.setItem('userEmail', storedUser.email)
+        
+        // Slight delay to see the toast before redirect
+        setTimeout(() => {
+            router.push('/')
+        }, 500)
+    } else {
+        toast.error("Invalid email or password.")
+    }
   }
 }
 </script>
