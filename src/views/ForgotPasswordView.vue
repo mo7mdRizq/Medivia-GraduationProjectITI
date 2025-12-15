@@ -7,6 +7,7 @@ import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import { authApi } from '../api/mockAuth'
 import emailjs from '@emailjs/browser'
+import { EnvelopeIcon, CheckBadgeIcon, ArrowLeftIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const email = ref('')
@@ -36,43 +37,29 @@ const handleResetRequest = async () => {
   if (validate()) {
     isLoading.value = true
     try {
-      // 1. Validate Account Existence
-      const response = await authApi.requestPasswordReset(email.value)
-      
-      // 2. Prepare EmailJS Parameters
-      // TODO: Replace these placeholders with your actual EmailJS credentials
-      const serviceID = 'service_2xvwukn';
-      const templateID = 'template_ur3zlqu';
-      const publicKey = 'fnJIAKWvrKg1eD-Hn';
+      // 1. Validate Account Existence (Simulation preserved for frontend logic, but real check happens on backend too)
+      await authApi.requestPasswordReset(email.value)
 
-      const templateParams = {
-        // Target Recipient (Admin) - Exhaustive list of potential keys to match your Template 'To Email' field
-        to_email: 'ahmedmakled2004@gmail.com',
-        recipient: 'ahmedmakled2004@gmail.com',
-        email: 'ahmedmakled2004@gmail.com',     // Common default
-        to: 'ahmedmakled2004@gmail.com',        // Common default
-        admin_email: 'ahmedmakled2004@gmail.com',
+      // 2. Call Node.js Backend
+      const response = await fetch('http://localhost:3000/auth/forgot-password', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email: email.value })
+      });
 
-        // Context
-        user_email: email.value,
-        reset_link: `${window.location.origin}/reset-password`,
-        message: `User (${email.value}) requested a password reset.`,
-        
-        // Standard fields
-        to_name: 'Admin',
-        from_name: 'Medivia System',
-        reply_to: email.value
-      };
+      const data = await response.json();
 
-      // 3. Send Email
-      await emailjs.send(serviceID, templateID, templateParams, publicKey);
+      if (!response.ok) {
+          throw new Error(data.message || 'Server error');
+      }
 
-      toast.success(`Request sent to system admin for ${email.value}`)
+      toast.success(data.message || `Request sent to system admin for ${email.value}`)
 
     } catch (error) {
-      console.error("EmailJS Error details:", error)
-      // Check if it's our API error or EmailJS error
-      const errorMsg = error.text || error.message || JSON.stringify(error)
+      console.error("Reset Error:", error)
+      const errorMsg = error.message || "Unknown error occurred";
       toast.error(`Send Failed: ${errorMsg}`)
     } finally {
       isLoading.value = false

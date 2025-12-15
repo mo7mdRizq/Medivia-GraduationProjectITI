@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
@@ -8,12 +8,22 @@ import BaseButton from '../components/ui/BaseButton.vue'
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ArrowLeftIcon, KeyIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
+const route = useRoute()
 const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const isSuccess = ref(false)
 const errors = ref({})
+const token = ref('')
+const isLoading = ref(false)
+
+onMounted(() => {
+  token.value = route.query.token
+  if (!token.value) {
+    toast.error("Invalid link: Missing reset token.")
+  }
+})
 
 const validate = () => {
   errors.value = {}
@@ -37,14 +47,39 @@ const validate = () => {
   return isValid
 }
 
-const handleResetPassword = () => {
+const handleResetPassword = async () => {
+  if (!token.value) {
+      toast.error("Cannot reset: Missing token.")
+      return
+  }
+
   if (validate()) {
-    // Simulate API call
-    console.log('Resetting password...')
-    toast.success('Password reset successfully!')
-    setTimeout(() => {
-      isSuccess.value = true
-    }, 1000)
+    isLoading.value = true
+    try {
+        const response = await fetch('http://localhost:3000/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: token.value,
+                password: password.value
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || "Reset failed");
+        }
+
+        toast.success(data.message);
+        isSuccess.value = true;
+        
+    } catch (error) {
+        console.error(error);
+        toast.error(error.message);
+    } finally {
+        isLoading.value = false;
+    }
   }
 }
 </script>
