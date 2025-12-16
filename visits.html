@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visits Management - Doctor Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1A56DB',
+                        'primary-light': '#EBF5FF',
+                        secondary: '#0E9F6E',
+                        'secondary-light': '#DEF7EC',
+                        gray: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            800: '#1F2937',
+                            900: '#111827',
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col h-full z-20">
+        <!-- Logo -->
+        <div class="p-6 flex items-center space-x-3">
+            <div class="bg-blue-600 rounded-lg p-2 text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                    </path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-gray-900 text-sm">Doctor Portal</h1>
+                <p class="text-xs text-gray-500">Healthcare Platform</p>
+            </div>
+        </div>
+
+        <!-- User Profile Mini -->
+        <div class="px-4 mb-6">
+            <div class="bg-primary-light rounded-xl p-3 flex items-center space-x-3">
+                <div
+                    class="bg-blue-600 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold text-sm">
+                    SC</div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-900">Dr. Sarah Chen</p>
+                    <p class="text-xs text-gray-500">Cardiologist</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+            <a href="index.html"
+                class="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg font-medium text-sm transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                    </path>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="patients.html"
+                class="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg font-medium text-sm transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                </svg>
+                <span>Patient List</span>
+            </a>
+            <a href="#"
+                class="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg font-medium text-sm transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                </svg>
+                <span>Patient Medical File</span>
+            </a>
+            <a href="#"
+                class="flex items-center space-x-3 px-3 py-2 text-blue-600 bg-blue-50 rounded-lg font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+                    </path>
+                </svg>
+                <span>Visits</span>
+            </a>
+            <a href="prescriptions.html"
+                class="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg font-medium text-sm transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                    </path>
+                </svg>
+                <span>Prescriptions</span>
+            </a>
+            <a href="appointments.html"
+                class="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg font-medium text-sm transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                </svg>
+                <span>Appointments</span>
+            </a>
+            <a href="#"
+                class="flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg font-medium text-sm transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span>Profile Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8 bg-gray-50 text-sm">
+        <!-- Header -->
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Visits Management</h2>
+                <p class="text-gray-500 mt-1">Log and manage patient visits</p>
+            </div>
+            <button
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow-sm transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Log New Visit
+            </button>
+        </header>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                <p class="text-sm font-medium text-gray-500 mb-2">Total Visits</p>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-3xl font-bold text-gray-900">8</h3>
+                </div>
+            </div>
+            <div class="bg-green-50 rounded-xl p-6 border border-green-100 shadow-sm">
+                <p class="text-sm font-medium text-green-600 mb-2">Completed</p>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-3xl font-bold text-gray-900">7</h3>
+                </div>
+            </div>
+            <div class="bg-blue-50 rounded-xl p-6 border border-blue-100 shadow-sm">
+                <p class="text-sm font-medium text-blue-600 mb-2">In Progress</p>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-3xl font-bold text-gray-900">1</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-8 bg-white p-2 rounded-xl shadow-sm border border-gray-100 flex items-center">
+            <svg class="w-5 h-5 text-gray-400 ml-3 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input type="text" placeholder="Search by patient name, diagnosis, or visit type..."
+                class="w-full text-sm text-gray-700 placeholder-gray-400 focus:outline-none h-10">
+        </div>
+
+        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">visits</h3>
+
+        <!-- Visits List -->
+        <div class="space-y-4">
+
+            <!-- Visit Card 1 (Expanded by default for demo) -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden visit-card">
+                <!-- Header / Trigger -->
+                <div
+                    class="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors visit-header bg-gray-50">
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-bold text-gray-900 text-base">Jessica Lee</h4>
+                                <span
+                                    class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">Completed</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500 mt-1">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Dec 7, 2025 at 2:30 PM
+                                <span class="mx-2">•</span>
+                                Follow-up Consultation
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium text-gray-900">Upper Respiratory Infection</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Follow-up: Dec 14, 2025</p>
+                    </div>
+                    <div class="ml-4 transform transition-transform duration-200 rotate-180 chevron">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Expanded Content -->
+                <div class="p-6 border-t border-gray-100 visit-content">
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-2"></span>
+                            <h5 class="text-sm font-semibold text-gray-900">Symptoms</h5>
+                        </div>
+                        <div class="flex flex-wrap gap-2 ml-3.5">
+                            <span
+                                class="px-3 py-1 bg-red-50 text-red-600 rounded-md text-xs font-medium border border-red-100">Persistent
+                                cough</span>
+                            <span
+                                class="px-3 py-1 bg-red-50 text-red-600 rounded-md text-xs font-medium border border-red-100">Mild
+                                fever</span>
+                            <span
+                                class="px-3 py-1 bg-red-50 text-red-600 rounded-md text-xs font-medium border border-red-100">Fatigue</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></span>
+                            <h5 class="text-sm font-semibold text-gray-900">Diagnosis</h5>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-lg text-gray-700 ml-3.5 border border-blue-100">
+                            Upper Respiratory Infection
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500 mr-2"></span>
+                            <h5 class="text-sm font-semibold text-gray-900">Treatment Plan</h5>
+                        </div>
+                        <div class="bg-teal-50 p-3 rounded-lg text-gray-700 ml-3.5 border border-teal-100">
+                            Prescribed Amoxicillin 500mg, rest, and fluids. Recommenced over-the-counter cough
+                            suppressant.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>
+                            <h5 class="text-sm font-semibold text-gray-900">Prescriptions</h5>
+                        </div>
+                        <div
+                            class="bg-purple-50 p-3 rounded-lg text-gray-700 ml-3.5 border border-purple-100 flex items-center">
+                            <svg class="w-4 h-4 text-purple-600 mr-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            Amoxicillin 500mg - 3x daily for 7 days
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-gray-500 mr-2"></span>
+                            <h5 class="text-sm font-semibold text-gray-900">Visit Notes</h5>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg text-gray-600 ml-3.5 border border-gray-100">
+                            Patient reports symptoms started 3 days ago. No history of allergies. Advised to return if
+                            symptoms worsen.
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 mr-2"></span>
+                            <h5 class="text-sm font-semibold text-gray-900">Attachments</h5>
+                        </div>
+                        <div class="flex gap-4 ml-3.5">
+                            <div
+                                class="bg-cyan-50 p-2 rounded-lg text-cyan-700 border border-cyan-100 flex items-center flex-1 cursor-pointer hover:bg-cyan-100 transition">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                chest-xray.pdf
+                            </div>
+                            <div
+                                class="bg-cyan-50 p-2 rounded-lg text-cyan-700 border border-cyan-100 flex items-center flex-1 cursor-pointer hover:bg-cyan-100 transition">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                lab-results.pdf
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visit Card 2 -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden visit-card">
+                <!-- Header / Trigger -->
+                <div
+                    class="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors visit-header">
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-bold text-gray-900 text-base">David Kim</h4>
+                                <span
+                                    class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">Completed</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500 mt-1">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Dec 7, 2025 at 11:00 AM
+                                <span class="mx-2">•</span>
+                                Diabetes Management
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium text-gray-900">Type 2 Diabetes - Blood glucose not well controlled</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Follow-up: Jan 7, 2026</p>
+                    </div>
+                    <div class="ml-4 transform transition-transform duration-200 chevron">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <!-- Expanded Content (Hidden) -->
+                <div class="p-6 border-t border-gray-100 visit-content hidden">
+                    <p class="text-gray-500">Details for David Kim would go here...</p>
+                </div>
+            </div>
+
+            <!-- Visit Card 3 -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden visit-card">
+                <!-- Header / Trigger -->
+                <div
+                    class="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors visit-header">
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-bold text-gray-900 text-base">Amanda White</h4>
+                                <span
+                                    class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">Completed</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500 mt-1">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Dec 6, 2025 at 9:00 AM
+                                <span class="mx-2">•</span>
+                                Annual Physical
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium text-gray-900">Healthy - Annual physical examination normal</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Follow-up: Dec 2026</p>
+                    </div>
+                    <div class="ml-4 transform transition-transform duration-200 chevron">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <!-- Expanded Content (Hidden) -->
+                <div class="p-6 border-t border-gray-100 visit-content hidden">
+                    <p class="text-gray-500">Details for Amanda White would go here...</p>
+                </div>
+            </div>
+
+            <!-- Visit Card 4 -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden visit-card">
+                <!-- Header / Trigger -->
+                <div
+                    class="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors visit-header">
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-bold text-gray-900 text-base">James Taylor</h4>
+                                <span
+                                    class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">Completed</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500 mt-1">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Dec 6, 2025 at 3:00 PM
+                                <span class="mx-2">•</span>
+                                Sick Visit
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium text-gray-900">Acute Bronchitis</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Follow-up: Dec 13, 2025</p>
+                    </div>
+                    <div class="ml-4 transform transition-transform duration-200 chevron">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <!-- Expanded Content (Hidden) -->
+                <div class="p-6 border-t border-gray-100 visit-content hidden">
+                    <p class="text-gray-500">Details for James Taylor would go here...</p>
+                </div>
+            </div>
+
+            <!-- Visit Card 5 -->
+            <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden visit-card">
+                <!-- Header / Trigger -->
+                <div
+                    class="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors visit-header">
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-bold text-gray-900 text-base">Michael Brown</h4>
+                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">In
+                                    Progress</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500 mt-1">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Dec 5, 2025 at 10:30 AM
+                                <span class="mx-2">•</span>
+                                Cardiology Consultation
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium text-gray-900">Hypertension with stress-related symptoms</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Follow-up: Dec 19, 2025</p>
+                    </div>
+                    <div class="ml-4 transform transition-transform duration-200 chevron">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <!-- Expanded Content (Hidden) -->
+                <div class="p-6 border-t border-gray-100 visit-content hidden">
+                    <p class="text-gray-500">Details for Michael Brown would go here...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
