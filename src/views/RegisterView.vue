@@ -7,6 +7,7 @@ import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import SocialAuthButtons from '../components/auth/SocialAuthButtons.vue'
 import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
+import { API_ENDPOINTS } from '../config'
 
 const router = useRouter()
 
@@ -16,6 +17,7 @@ const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
+const isLoading = ref(false)
 const errors = ref({})
 
 const validate = () => {
@@ -70,19 +72,53 @@ const validate = () => {
   return isValid
 }
 
-const handleRegister = () => {
+const handleRegister = async () => {
   if (validate()) {
-    // Save Registration Data
-    const userData = {
-      name: fullName.value,
-      email: email.value,
-      password: password.value // In a real app, this should NEVER be stored in plain text
+    isLoading.value = true
+    // Save Registration Data via Backend
+    try {
+        const response = await fetch(API_ENDPOINTS.AUTH.REGISTER, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: fullName.value,
+                email: email.value,
+                password: password.value
+            })
+        });
+        
+        // Try to parse JSON, handle parsing errors
+        let data;
+        try {
+            data = await response.json();
+        } catch (parseError) {
+            throw new Error('Server returned invalid response. Please try again later.');
+        }
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Registration failed');
+        }
+    
+        // Optional: Auto-login or just redirect
+        // Ideally, we should receive a token here if we implemented JWT, but for now we redirect to login logic.
+        // We can mimic the "user registered" state if needed, but since we are redirecting to login, 
+        // the user will just log in with their new creds against the backend.
+        
+        toast.success(data.message)
+        router.push('/login')
+
+    } catch (error) {
+        console.error(error);
+        
+        // Handle network errors specifically
+        if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+            toast.error('Network error: Could not connect to server. Please check your connection and ensure the server is running.');
+        } else {
+            toast.error(error.message || 'Something went wrong. Please try again later.');
+        }
+    } finally {
+        isLoading.value = false;
     }
-    
-    localStorage.setItem('registeredUser', JSON.stringify(userData))
-    
-    toast.success('Registration successful! Please login with your new credentials.')
-    router.push('/login')
   }
 }
 </script>
@@ -152,7 +188,10 @@ const handleRegister = () => {
           </template>
         </BaseInput>
 
-        <BaseButton block type="submit">Create Account</BaseButton>
+        <BaseButton block type="submit" :disabled="isLoading">
+          <span v-if="isLoading">Creating account...</span>
+          <span v-else>Create Account</span>
+        </BaseButton>
       </form>
 
       <div class="relative mt-8 mb-8">

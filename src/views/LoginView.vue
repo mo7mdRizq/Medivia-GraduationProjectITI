@@ -7,12 +7,14 @@ import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import SocialAuthButtons from '../components/auth/SocialAuthButtons.vue'
 import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
+import { API_ENDPOINTS } from '../config'
 
 const router = useRouter()
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
 const showPassword = ref(false)
+const isLoading = ref(false)
 const errors = ref({})
 
 const validate = () => {
@@ -39,35 +41,57 @@ const validate = () => {
   return isValid
 }
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (validate()) {
-    // Retrieve stored user
-    const storedUserFunc = localStorage.getItem('registeredUser')
-    
-    if (!storedUserFunc) {
-       toast.error("No account found. Please register first.")
-       return
-    }
+    isLoading.value = true
+    try {
+        const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email.value,
+                password: password.value
+            })
+        });
 
-    const storedUser = JSON.parse(storedUserFunc)
+        // Try to parse JSON, handle parsing errors
+        let data;
+        try {
+            data = await response.json();
+        } catch (parseError) {
+            throw new Error('Server returned invalid response. Please try again later.');
+        }
 
-    // Check Credentials
-    if (email.value === storedUser.email && password.value === storedUser.password) {
-        toast.success(`Welcome back, ${storedUser.name}!`, {
+        if (!response.ok) {
+            throw new Error(data.message || 'Login failed');
+        }
+
+        // Success
+        toast.success(`Welcome back, ${data.user.name}!`, {
             transition: toast.TRANSITIONS.ZOOM,
-        })
-        
+        });
+
         // Set persistent auth state
-        localStorage.setItem('isAuthenticated', 'true')
-        localStorage.setItem('userName', storedUser.name)
-        localStorage.setItem('userEmail', storedUser.email)
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userName', data.user.name);
+        localStorage.setItem('userEmail', data.user.email);
+        // We might want to store user ID too if needed
         
-        // Slight delay to see the toast before redirect
         setTimeout(() => {
-            router.push('/')
-        }, 500)
-    } else {
-        toast.error("Invalid email or password.")
+            router.push('/');
+        }, 500);
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        
+        // Handle network errors specifically
+        if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+            toast.error('Network error: Could not connect to server. Please check your connection and ensure the server is running.');
+        } else {
+            toast.error(error.message || 'Something went wrong. Please try again later.');
+        }
+    } finally {
+        isLoading.value = false;
     }
   }
 }
@@ -126,7 +150,10 @@ const handleLogin = () => {
           </router-link>
         </div>
 
-        <BaseButton block type="submit">Login</BaseButton>
+        <BaseButton block type="submit" :disabled="isLoading">
+          <span v-if="isLoading">Logging in...</span>
+          <span v-else>Login</span>
+        </BaseButton>
       </form>
 
       <div class="relative mt-8 mb-8">

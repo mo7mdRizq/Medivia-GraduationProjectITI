@@ -1,87 +1,98 @@
-const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
-const validator = require('validator');
-const db = require('../local-db');
-const nodemailer = require('nodemailer');
+import bcrypt from 'bcryptjs'
+import validator from 'validator'
+import db from '../local-db.js'
 
-// Configure Nodemailer
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER?.trim(),
-        pass: process.env.EMAIL_PASS?.trim()
+// ================= REGISTER =================
+export const register = async (req, res) => {
+  try {
+    const { name, email, password } = req.body
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'All fields are required.' })
     }
-});
 
-exports.forgotPassword = async (req, res) => {
-    try {
-        let { email } = req.body;
-        if (typeof email !== 'string') return res.status(400).json({ success: false, message: "Invalid input." });
-        email = email.trim().toLowerCase();
-
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({ success: false, message: "Invalid email." });
-        }
-
-        const user = db.users.findByEmail(email);
-
-        if (!user) {
-            console.log(`[Forgot Password] User not found: ${email}`);
-            return res.status(200).json({ success: true, message: "If your account exists, a reset link has been sent." });
-        }
-
-        // Generate Token
-        const rawToken = crypto.randomBytes(32).toString('hex');
-        const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-        const expiresAt = new Date(Date.now() + 3600000).toISOString();
-
-        db.tokens.create(user.id, tokenHash, expiresAt);
-
-        // Send Email
-        const resetLink = `http://localhost:5173/reset-password?token=${rawToken}`;
-        const mailOptions = {
-            from: `"Medivia Security" <${process.env.EMAIL_USER?.trim()}>`,
-            to: email,
-            subject: "Reset Your Password",
-            html: `
-                <h3>Medivia Password Reset</h3>
-                <p>Click below to reset your password:</p>
-                <a href="${resetLink}">${resetLink}</a>
-                <p>Expires in 1 hour.</p>
-            `
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log(`[Success] Email sent to ${email}`);
-        res.status(200).json({ success: true, message: "If your account exists, a reset link has been sent." });
-
-    } catch (error) {
-        console.error("Auth Error:", error);
-        res.status(500).json({ success: false, message: "Server error during request." });
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ success: false, message: 'Invalid email format.' })
     }
-};
 
-exports.resetPassword = async (req, res) => {
-    try {
-        const { token, password } = req.body;
-        if (!token || !password) return res.status(400).json({ success: false, message: "Missing data." });
-
-        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-        const validTokenRecord = db.tokens.findValid(tokenHash);
-
-        if (!validTokenRecord) {
-            return res.status(400).json({ success: false, message: "Invalid or expired token." });
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, salt);
-
-        db.users.updatePassword(validTokenRecord.user_id, passwordHash);
-        db.tokens.markUsed(validTokenRecord.id);
-
-        res.status(200).json({ success: true, message: "Password updated successfully." });
-    } catch (error) {
-        console.error("Reset Error:", error);
-        res.status(500).json({ success: false, message: "Server error during reset." });
+    if (db.users.findByEmail(email)) {
+      return res.status(400).json({ success: false, message: 'Email already registered.' })
     }
-};
+
+    const salt = await bcrypt.genSalt(10)
+    const passwordHash = await bcrypt.hash(password, salt)
+
+    db.users.create({
+      id: Date.now(),
+      name,
+      email,
+      password: passwordHash,
+      created_at: new Date().toISOString()
+    })
+
+    return res.status(201).json({ success: true, message: 'Registration successful.' })
+  } catch (error) {
+    console.error('Register Error:', error)
+    return res.status(500).json({ success: false, message: 'Server error.' })
+  }
+}
+
+// ================= LOGIN =================
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body
+
+    const user = db.users.findByEmail(email)
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid credentials.' })
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password)
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Invalid credentials.' })
+    }
+
+    return res.json({
+      success: true,
+      message: 'Login successful.',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    })
+  } catch (error) {
+    console.error('Login Error:', error)
+    return res.status(500).json({ success: false, message: 'Server error.' })
+  }
+}
+
+// ================= RESET PASSWORD (DEMO) =================
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required.' })
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ success: false, message: 'Invalid email format.' })
+    }
+
+    const user = db.users.findByEmail(email)
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'User not found.' })
+    }
+
+    const salt = await bcrypt.genSalt(10)
+    const passwordHash = await bcrypt.hash(password, salt)
+
+    db.users.updatePassword(user.id, passwordHash)
+
+    return res.status(200).json({ success: true, message: 'Password updated successfully.' })
+  } catch (error) {
+    console.error('Reset Error:', error)
+    return res.status(500).json({ success: false, message: 'Server error during reset.' })
+  }
+}

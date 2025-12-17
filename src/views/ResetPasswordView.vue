@@ -6,6 +6,7 @@ import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, ArrowLeftIcon, KeyIcon } from '@heroicons/vue/24/outline'
+import { API_ENDPOINTS } from '../config'
 
 const router = useRouter()
 const route = useRoute()
@@ -15,15 +16,8 @@ const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const isSuccess = ref(false)
 const errors = ref({})
-const token = ref('')
 const isLoading = ref(false)
-
-onMounted(() => {
-  token.value = route.query.token
-  if (!token.value) {
-    toast.error("Invalid link: Missing reset token.")
-  }
-})
+const token = ref('')
 
 const validate = () => {
   errors.value = {}
@@ -32,6 +26,8 @@ const validate = () => {
     errors.value.password = 'Password is required'
   } else if (password.value.length < 8) {
     errors.value.password = 'Password must be at least 8 characters'
+  } else if (!/[a-zA-Z]/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one letter'
   }
 
   if (!confirmPassword.value) {
@@ -47,39 +43,74 @@ const validate = () => {
   return isValid
 }
 
+// Check for token and email on mount
+onMounted(() => {
+  token.value = route.query.token || ''
+  const email = route.query.email || ''
+  
+  if (!token.value || !email) {
+    toast.error('Invalid or missing reset link. Please request a new password reset link.')
+    setTimeout(() => {
+      router.push('/forgot-password')
+    }, 2000)
+  }
+})
+
 const handleResetPassword = async () => {
+  if (!validate()) return
+
   if (!token.value) {
-      toast.error("Cannot reset: Missing token.")
-      return
+    toast.error('Invalid or missing reset token. Please request a new password reset link.')
+    router.push('/forgot-password')
+    return
   }
 
-  if (validate()) {
-    isLoading.value = true
-    try {
-        const response = await fetch('http://localhost:3000/auth/reset-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                token: token.value,
-                password: password.value
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.message || "Reset failed");
-        }
+  const email = route.query.email
+  if (!email) {
+    toast.error('Invalid reset link. Please request a new password reset link.')
+    router.push('/forgot-password')
+    return
+  }
 
-        toast.success(data.message);
-        isSuccess.value = true;
-        
-    } catch (error) {
-        console.error(error);
-        toast.error(error.message);
-    } finally {
-        isLoading.value = false;
+  isLoading.value = true
+
+  try {
+    const response = await fetch(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        password: password.value
+      })
+    })
+
+    // Try to parse JSON, handle parsing errors
+    let data
+    try {
+      data = await response.json()
+    } catch (parseError) {
+      throw new Error('Server returned invalid response. Please try again later.')
     }
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to reset password')
+    }
+
+    // Success
+    toast.success(data.message || 'Password updated successfully.')
+    isSuccess.value = true
+
+  } catch (error) {
+    console.error('Reset Password Error:', error)
+    
+    // Handle network errors specifically
+    if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+      toast.error('Network error: Could not connect to server. Please check your connection and ensure the server is running.')
+    } else {
+      toast.error(error.message || 'Something went wrong. Please try again later.')
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
@@ -137,7 +168,10 @@ const handleResetPassword = async () => {
           </BaseInput>
 
           <!-- The reference image said "Go to gmail" which is weird for this step. Using "Reset Password" -->
-           <BaseButton block type="submit">Reset Password</BaseButton>
+           <BaseButton block type="submit" :disabled="isLoading">
+             <span v-if="isLoading">Resetting...</span>
+             <span v-else>Reset Password</span>
+           </BaseButton>
         </form>
 
         <div class="mt-8 text-center">
