@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
-<<<<<<< HEAD
     history: createWebHistory(import.meta.env.BASE_URL),
     scrollBehavior(to, from, savedPosition) {
         if (savedPosition) {
@@ -45,12 +44,19 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+    // Set page title
     document.title = to.meta.title || 'Medivia - Medical Story. One Platform.'
-    next()
-=======
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [],
->>>>>>> files
+
+    // Check authentication for protected routes
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+    const publicRoutes = ['landing', 'login', 'register', 'forgot-password', 'reset-password']
+
+    // If route requires auth and user is not authenticated, redirect to login
+    if (!publicRoutes.includes(to.name) && !isAuthenticated) {
+        next({ name: 'login' })
+    } else {
+        next()
+    }
 })
 
 export default router

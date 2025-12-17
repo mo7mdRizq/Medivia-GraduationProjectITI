@@ -41,18 +41,25 @@ const validate = () => {
 
 const handleLogin = () => {
   if (validate()) {
-    // Simulate Login
-    toast.success("Welcome back!", {
+    // Check if user exists and credentials match
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const user = users.find(u => u.email === email.value && u.password === password.value)
+    
+    if (!user) {
+      toast.error('Invalid email or password. Please sign up if you don\'t have an account.', {
+        autoClose: 4000,
+      })
+      return
+    }
+    
+    // Store auth state
+    localStorage.setItem('isAuthenticated', 'true')
+    localStorage.setItem('userEmail', email.value)
+    localStorage.setItem('userName', user.fullName)
+    
+    toast.success(`Welcome back, ${user.fullName}!`, {
         transition: toast.TRANSITIONS.ZOOM,
     })
-    
-    // Set persistent auth state
-    localStorage.setItem('isAuthenticated', 'true')
-    // Extract name from email for demo user profile
-    const nameFromEmail = email.value.split('@')[0]
-    // Capitalize first letter
-    const formattedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1)
-    localStorage.setItem('userName', formattedName)
     
     // Slight delay to see the toast before redirect
     setTimeout(() => {

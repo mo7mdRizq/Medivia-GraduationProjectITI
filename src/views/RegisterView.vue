@@ -21,11 +21,11 @@ const errors = ref({})
 const validate = () => {
   errors.value = {}
   
-  // Full Name: No numbers allowed
+  // Full Name: Letters only (no numbers, no special characters)
   if (!fullName.value) {
     errors.value.fullName = 'Full Name is required'
-  } else if (/\d/.test(fullName.value)) {
-    errors.value.fullName = 'Full Name cannot contain numbers'
+  } else if (!/^[A-Za-z\s]+$/.test(fullName.value)) {
+    errors.value.fullName = 'Full Name must contain letters only'
   }
 
   // Email: Strict validation
@@ -35,11 +35,19 @@ const validate = () => {
     errors.value.email = 'Please enter a valid email address'
   }
 
-  // Password
+  // Password: Must have uppercase, lowercase, number, symbol, min 8 chars
   if (!password.value) {
     errors.value.password = 'Password is required'
   } else if (password.value.length < 8) {
     errors.value.password = 'Password must be at least 8 characters'
+  } else if (!/[A-Z]/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one uppercase letter'
+  } else if (!/[a-z]/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one lowercase letter'
+  } else if (!/\d/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one number'
+  } else if (!/[!@#$%^&*]/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one symbol (!@#$%^&*)'
   }
 
   // Confirm Password
@@ -62,7 +70,23 @@ const validate = () => {
 
 const handleRegister = () => {
   if (validate()) {
-    // Simulate API call
+    // Check if user already exists
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const userExists = users.some(user => user.email === email.value)
+    
+    if (userExists) {
+      toast.error('An account with this email already exists')
+      return
+    }
+    
+    // Store new user credentials
+    users.push({
+      fullName: fullName.value,
+      email: email.value,
+      password: password.value // In a real app, this would be hashed
+    })
+    localStorage.setItem('registeredUsers', JSON.stringify(users))
+    
     toast.success('Registration successful! Please login.')
     router.push('/login')
   }
