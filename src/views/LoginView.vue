@@ -20,7 +20,8 @@ const validate = () => {
   
   if (!email.value) {
     errors.value.email = 'Email address is required'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+  } else if (email.value !== 'admin' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    // Allow 'admin' as a valid username, otherwise require valid email
     errors.value.email = 'Please enter a valid email address'
   }
 
@@ -41,13 +42,29 @@ const validate = () => {
 
 const handleLogin = () => {
   if (validate()) {
-    // Simulate Login
+    // Check for Admin Credentials
+    if (email.value === 'admin' && password.value === 'admin207') {
+       toast.success("Welcome, Administrator", {
+          transition: toast.TRANSITIONS.ZOOM,
+       })
+       localStorage.setItem('isAuthenticated', 'true')
+       localStorage.setItem('userRole', 'admin')
+       localStorage.setItem('userName', 'Administrator')
+       
+       setTimeout(() => {
+           router.push('/admin/dashboard')
+       }, 500)
+       return
+    }
+
+    // Normal User Login Simulation
     toast.success("Welcome back!", {
         transition: toast.TRANSITIONS.ZOOM,
     })
     
     // Set persistent auth state
     localStorage.setItem('isAuthenticated', 'true')
+    localStorage.setItem('userRole', 'user')
     // Extract name from email for demo user profile
     const nameFromEmail = email.value.split('@')[0]
     // Capitalize first letter

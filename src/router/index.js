@@ -35,12 +35,39 @@ const router = createRouter({
             meta: { title: 'Recover Password - Medivia' }
         },
         {
-            path: '/reset-password',
-            name: 'reset-password',
-            component: () => import('../views/ResetPasswordView.vue'),
             meta: { title: 'Reset Password - Medivia' }
+        },
+        {
+            path: '/admin',
+            component: () => import('../layouts/AdminLayout.vue'),
+            meta: { requiresAuth: true }, // Placeholder for auth guard
+            children: [
+                {
+                    path: 'dashboard',
+                    name: 'admin-dashboard',
+                    component: () => import('../views/admin/AdminDashboardView.vue'),
+                    meta: { title: 'Dashboard - Medivia Admin' }
+                },
+                {
+                    path: 'users',
+                    name: 'admin-users',
+                    component: () => import('../views/admin/AdminUsersView.vue'),
+                    meta: { title: 'Users - Medivia Admin' }
+                },
+                {
+                    path: 'settings',
+                    name: 'admin-settings',
+                    component: () => import('../views/admin/AdminSettingsView.vue'),
+                    meta: { title: 'Settings - Medivia Admin' }
+                },
+                {
+                    path: '',
+                    redirect: { name: 'admin-dashboard' }
+                }
+            ]
         }
     ]
+
 })
 
 router.beforeEach((to, from, next) => {
