@@ -52,11 +52,18 @@ const router = createRouter({
                     meta: { title: 'Dashboard - Medivia Admin' }
                 },
                 {
-                    path: 'users',
-                    name: 'admin-users',
-                    component: () => import('../views/admin/AdminUsersView.vue'),
-                    meta: { title: 'Users - Medivia Admin' }
+                    path: 'patients',
+                    name: 'admin-patients',
+                    component: () => import('../views/admin/AdminPatientsView.vue'),
+                    meta: { title: 'Patients Management - Medivia Admin' }
                 },
+                {
+                    path: 'appointments',
+                    name: 'admin-appointments',
+                    component: () => import('../views/admin/AdminAppointmentsView.vue'),
+                    meta: { title: 'Appointments Manager - Medivia Admin' }
+                },
+                // Hidden settings route if needed later, or removed for now as per mockup
                 {
                     path: 'settings',
                     name: 'admin-settings',

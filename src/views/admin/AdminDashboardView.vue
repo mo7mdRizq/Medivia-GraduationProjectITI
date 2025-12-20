@@ -1,23 +1,35 @@
 <script setup>
 import { 
   UsersIcon, 
-  CurrencyDollarIcon, 
+  CalendarIcon, 
   ChartBarIcon, 
-  ArrowUpIcon,
-  ArrowDownIcon
+  ComputerDesktopIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon
 } from '@heroicons/vue/24/outline'
 
 const stats = [
-  { name: 'Total Users', value: '2,543', change: '+12.5%', type: 'increase', icon: UsersIcon },
-  { name: 'Total Revenue', value: '$45,231', change: '+2.1%', type: 'increase', icon: CurrencyDollarIcon },
-  { name: 'Active Sessions', value: '1,231', change: '-3.2%', type: 'decrease', icon: ChartBarIcon },
+  { name: 'Total Patients', value: '378', change: '+33 this month', trend: '+9.6%', trendColor: 'text-green-500', icon: UsersIcon, iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+  { name: 'Total Doctors', value: '24', change: '3 specialties', trend: '', trendColor: '', icon: UsersIcon, iconBg: 'bg-teal-50', iconColor: 'text-teal-600' },
+  { name: 'Appointments Today', value: '18', change: '5 pending approval', trend: '', trendColor: '', icon: CalendarIcon, iconBg: 'bg-purple-50', iconColor: 'text-purple-600' },
+  { name: 'System Health', value: '99.9%', change: 'All systems operational', trend: '+0.2%', trendColor: 'text-green-500', icon: ChartBarIcon, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
 ]
 
-const activity = [
-  { id: 1, user: 'Sarah Wilson', action: 'Created a new account', time: '2 minutes ago', avatar: 'https://ui-avatars.com/api/?name=Sarah+Wilson&background=random' },
-  { id: 2, user: 'Dr. Michael Brown', action: 'Uploaded a new report', time: '1 hour ago', avatar: 'https://ui-avatars.com/api/?name=Michael+Brown&background=random' },
-  { id: 3, user: 'James Smith', action: 'Updated profile details', time: '3 hours ago', avatar: 'https://ui-avatars.com/api/?name=James+Smith&background=random' },
-  { id: 4, user: 'Emily Davis', action: 'Scheduled an appointment', time: '5 hours ago', avatar: 'https://ui-avatars.com/api/?name=Emily+Davis&background=random' },
+const upcomingAppointments = [
+  { id: 1, patient: 'John Martinez', doctor: 'Dr. Sarah Chen', time: '9:00 AM', status: 'Confirmed' },
+  { id: 2, patient: 'Emily Johnson', doctor: 'Dr. Michael Rodriguez', time: '10:00 AM', status: 'Confirmed' },
+  { id: 3, patient: 'Michael Brown', doctor: 'Dr. Sarah Chen', time: '11:30 AM', status: 'Pending' },
+  { id: 4, patient: 'Sarah Davis', doctor: 'Dr. Lisa Wang', time: '2:00 PM', status: 'Confirmed' },
+  { id: 5, patient: 'Robert Wilson', doctor: 'Dr. Sarah Chen', time: '3:30 PM', status: 'Confirmed' },
+]
+
+const recentActivity = [
+  { id: 1, title: 'New Patient', desc: 'Emily Johnson registered', time: '5 min ago', icon: UsersIcon, bg: 'bg-blue-100', color: 'text-blue-600' },
+  { id: 2, title: 'Appointment', desc: 'Dr. Sarah Chen - John Martinez', time: '15 min ago', icon: CalendarIcon, bg: 'bg-green-100', color: 'text-green-600' },
+  { id: 3, title: 'System Alert', desc: 'Backup completed successfully', time: '1 hour ago', icon: CheckCircleIcon, bg: 'bg-purple-100', color: 'text-purple-600' },
+  { id: 4, title: 'New Doctor', desc: 'Dr. Michael Rodriguez joined', time: '2 hours ago', icon: UsersIcon, bg: 'bg-teal-100', color: 'text-teal-600' },
+  { id: 5, title: 'Appointment', desc: 'Dr. Lisa Wang - Sarah Davis', time: '3 hours ago', icon: CalendarIcon, bg: 'bg-green-100', color: 'text-green-600' },
 ]
 </script>
 
@@ -25,98 +37,172 @@ const activity = [
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-      <p class="mt-1 text-sm text-gray-500">Overview of your system performance and activity.</p>
+      <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+      <p class="mt-1 text-sm text-gray-500">Healthcare system overview and management</p>
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div 
-        v-for="stat in stats" 
-        :key="stat.name" 
-        class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-500">{{ stat.name }}</p>
-            <p class="mt-2 text-3xl font-bold text-gray-900">{{ stat.value }}</p>
-          </div>
-          <div class="p-3 bg-brand-50 rounded-lg">
-            <component :is="stat.icon" class="w-6 h-6 text-brand-600" />
-          </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div v-for="stat in stats" :key="stat.name" class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <div class="flex items-start justify-between">
+            <div class="p-3 rounded-xl" :class="stat.iconBg">
+                <component :is="stat.icon" class="w-6 h-6" :class="stat.iconColor" />
+            </div>
+            <span v-if="stat.trend" class="text-xs font-bold" :class="stat.trendColor">
+                {{ stat.trend }} <span class="text-gray-400 font-normal">↗</span>
+            </span>
         </div>
-        <div class="mt-4 flex items-center text-sm">
-          <component 
-            :is="stat.type === 'increase' ? ArrowUpIcon : ArrowDownIcon" 
-            class="w-4 h-4 mr-1"
-            :class="stat.type === 'increase' ? 'text-green-500' : 'text-red-500'"
-          />
-          <span 
-            class="font-medium"
-            :class="stat.type === 'increase' ? 'text-green-600' : 'text-red-600'"
-          >
-            {{ stat.change }}
-          </span>
-          <span class="text-gray-400 ml-2">from last month</span>
+        <div class="mt-4">
+            <h3 class="text-sm font-medium text-gray-500">{{ stat.name }}</h3>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ stat.value }}</p>
+            <p class="text-xs text-gray-400 mt-1">{{ stat.change }}</p>
         </div>
       </div>
     </div>
 
-    <!-- Charts & Activity -->
+    <!-- Charts Section (Mock Visuals) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Mock Chart Section -->
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">User Growth</h3>
-        <div class="h-64 flex items-end space-x-2 justify-between px-2">
-           <!-- Simple CSS Bar Chart Mockup -->
-           <div class="w-full bg-brand-100 rounded-t-sm h-[40%] hover:bg-brand-200 transition-colors cursor-pointer relative group">
-             <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded">40%</div>
-           </div>
-           <div class="w-full bg-brand-100 rounded-t-sm h-[70%] hover:bg-brand-200 transition-colors cursor-pointer relative group">
-             <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded">70%</div>
-           </div>
-           <div class="w-full bg-brand-100 rounded-t-sm h-[50%] hover:bg-brand-200 transition-colors cursor-pointer relative group">
-             <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded">50%</div>
-           </div>
-           <div class="w-full bg-brand-100 rounded-t-sm h-[85%] hover:bg-brand-200 transition-colors cursor-pointer relative group">
-             <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded">85%</div>
-           </div>
-           <div class="w-full bg-brand-500 rounded-t-sm h-[60%] hover:bg-brand-600 transition-colors cursor-pointer relative group shadow-brand">
-             <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded">60%</div>
-           </div>
+        <!-- Appointments Overview -->
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <h3 class="font-bold text-gray-900">Appointments Overview</h3>
+            <p class="text-xs text-gray-500 mb-6">Monthly appointments vs completed</p>
+            
+            <div class="h-64 flex items-end justify-between gap-2 px-2">
+                <!-- Mock Bars -->
+                <div v-for="i in 6" :key="i" class="flex flex-col items-center gap-2 flex-1">
+                    <div class="flex items-end gap-1 w-full justify-center h-full">
+                         <div class="w-3 rounded-t-sm bg-teal-400" :style="`height: ${40 + Math.random() * 40}%`"></div>
+                         <div class="w-3 rounded-t-sm bg-indigo-500" :style="`height: ${50 + Math.random() * 50}%`"></div>
+                    </div>
+                    <span class="text-xs text-gray-400">{{ ['Jan','Feb','Mar','Apr','May','Jun'][i-1] }}</span>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-center gap-4">
+                <div class="flex items-center gap-2 text-xs text-gray-500"><div class="w-3 h-3 bg-teal-400"></div> Completed</div>
+                <div class="flex items-center gap-2 text-xs text-gray-500"><div class="w-3 h-3 bg-indigo-500"></div> Total Appointments</div>
+            </div>
         </div>
-        <div class="flex justify-between mt-4 text-xs text-gray-500">
-          <span>Mon</span>
-          <span>Tue</span>
-          <span>Wed</span>
-          <span>Thu</span>
-          <span>Fri</span>
-        </div>
-      </div>
 
-      <!-- Recent Activity -->
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
-        <div class="space-y-4">
-          <div v-for="item in activity" :key="item.id" class="flex items-start space-x-3">
-            <img :src="item.avatar" alt="" class="w-10 h-10 rounded-full bg-gray-100">
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-900">
-                {{ item.user }}
-              </p>
-              <p class="text-sm text-gray-500 truncate">
-                {{ item.action }}
-              </p>
+        <!-- Patient Growth -->
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <h3 class="font-bold text-gray-900">Patient Growth</h3>
+            <p class="text-xs text-gray-500 mb-6">Total registered patients over time</p>
+            
+            <div class="h-64 flex items-end relative px-4">
+                 <!-- Mock Line Chart via SVG -->
+                 <svg class="absolute inset-0 w-full h-full p-6" viewBox="0 0 100 50" preserveAspectRatio="none">
+                     <path d="M0,40 Q20,35 40,30 T80,15 T100,5" fill="none" stroke="#3B82F6" stroke-width="0.5" />
+                     <circle cx="0" cy="40" r="1.5" fill="#3B82F6"/>
+                     <circle cx="20" cy="35" r="1.5" fill="#3B82F6"/>
+                     <circle cx="40" cy="28" r="1.5" fill="#3B82F6"/>
+                     <circle cx="60" cy="22" r="1.5" fill="#3B82F6"/>
+                     <circle cx="80" cy="15" r="1.5" fill="#3B82F6"/>
+                     <circle cx="100" cy="5" r="1.5" fill="#3B82F6"/>
+                 </svg>
+                 <!-- Grid Lines mock -->
+                 <div class="w-full h-full border-l border-b border-gray-100 flex justify-between items-end pb-[-20px]">
+                     <span v-for="m in ['Jan','Feb','Mar','Apr','May','Jun']" :key="m" class="text-xs text-gray-400 translate-y-6">{{ m }}</span>
+                 </div>
             </div>
-            <div class="text-xs text-gray-400">
-              {{ item.time }}
+             <div class="mt-4 flex justify-center gap-4">
+                <div class="flex items-center gap-2 text-xs text-blue-500 font-bold">Total Patients ↗</div>
             </div>
-          </div>
         </div>
-        <button class="w-full mt-6 py-2 text-sm text-brand-600 font-medium hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors">
-          View All History
-        </button>
-      </div>
+    </div>
+
+    <!-- Bottom Split Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Upcoming Appointments -->
+        <div class="bg-blue-50/30 p-6 rounded-xl border border-blue-100/50">
+             <div class="flex items-center gap-3 mb-6">
+                 <div class="p-2 bg-blue-100 rounded-lg text-blue-600"><CalendarIcon class="w-5 h-5"/></div>
+                 <div>
+                     <h3 class="font-bold text-gray-900">Upcoming Appointments</h3>
+                     <p class="text-xs text-gray-500">Today's schedule</p>
+                 </div>
+             </div>
+             
+             <div class="space-y-3">
+                 <div v-for="appt in upcomingAppointments" :key="appt.id" class="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                     <div>
+                         <h4 class="font-bold text-gray-900 text-sm">{{ appt.patient }} <span class="text-gray-400 font-normal">→ {{ appt.doctor }}</span></h4>
+                         <p class="text-xs text-gray-400 mt-1 flex items-center gap-1"><ClockIcon class="w-3 h-3"/> {{ appt.time }}</p>
+                     </div>
+                     <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-md" :class="appt.status === 'Pending' ? 'bg-orange-100 text-orange-600' : ''">{{ appt.status }}</span>
+                 </div>
+             </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-pink-50/30 p-6 rounded-xl border border-pink-100/50">
+             <div class="flex items-center gap-3 mb-6">
+                 <div class="p-2 bg-purple-100 rounded-lg text-purple-600"><ChartBarIcon class="w-5 h-5"/></div>
+                 <div>
+                     <h3 class="font-bold text-gray-900">Recent Activity</h3>
+                     <p class="text-xs text-gray-500">Latest system events</p>
+                 </div>
+             </div>
+             
+             <div class="space-y-4">
+                 <div v-for="item in recentActivity" :key="item.id" class="flex gap-4">
+                     <div class="flex flex-col items-center">
+                         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="[item.bg, item.color]">
+                             <component :is="item.icon" class="w-5 h-5" />
+                         </div>
+                         <div class="h-full w-px bg-gray-200 my-2" v-if="item.id !== recentActivity.length"></div>
+                     </div>
+                     <div class="pb-4">
+                         <div class="flex justify-between items-start w-full">
+                            <h4 class="font-bold text-gray-900 text-sm">{{ item.title }}</h4>
+                            <span class="text-[10px] text-gray-400 ml-auto pl-4 whitespace-nowrap">{{ item.time }}</span>
+                         </div>
+                         <p class="text-xs text-gray-500 mt-0.5">{{ item.desc }}</p>
+                     </div>
+                 </div>
+             </div>
+        </div>
+    </div>
+
+    <!-- System Statistics Footer -->
+    <div class="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100">
+        <div class="flex items-center gap-3 mb-6">
+             <div class="p-2 bg-white rounded-lg text-indigo-600 shadow-sm"><ComputerDesktopIcon class="w-5 h-5"/></div>
+             <div>
+                 <h3 class="font-bold text-gray-900">System Statistics</h3>
+                 <p class="text-xs text-gray-500">Real-time system performance metrics</p>
+             </div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-gray-500">Server Uptime</span>
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                </div>
+                <p class="text-xl font-bold text-gray-900">99.9%</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-gray-500">Database Size</span>
+                    <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                </div>
+                <p class="text-xl font-bold text-gray-900">2.4 GB</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-gray-500">Active Sessions</span>
+                    <div class="w-2 h-2 rounded-full bg-orange-400"></div>
+                </div>
+                <p class="text-xl font-bold text-gray-900">47</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-gray-500">Avg Response Time</span>
+                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                </div>
+                <p class="text-xl font-bold text-gray-900">124ms</p>
+            </div>
+        </div>
     </div>
   </div>
 </template>

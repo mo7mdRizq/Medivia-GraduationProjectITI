@@ -26,6 +26,26 @@ const security = ref({
   two_factor: true,
   session_timeout: false
 })
+
+const showPasswordForm = ref(false)
+const newPassword = ref('')
+import { toast } from 'vue3-toastify'
+
+const updatePassword = () => {
+    if (!newPassword.value) {
+        toast.error("Please enter a new password")
+        return
+    }
+    
+    // Update admin credentials in localStorage
+    const storedAdmin = JSON.parse(localStorage.getItem('adminCredentials') || '{"username": "admin@gmail.com", "password": "Adminadmin207#"}')
+    storedAdmin.password = newPassword.value
+    localStorage.setItem('adminCredentials', JSON.stringify(storedAdmin))
+    
+    toast.success("Password updated successfully!")
+    showPasswordForm.value = false
+    newPassword.value = ''
+}
 </script>
 
 <template>
@@ -94,13 +114,29 @@ const security = ref({
              <LockClosedIcon class="w-5 h-5 text-gray-400" />
              Security
            </h2>
+           
            <div class="space-y-4">
-             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-               <div>
-                 <p class="font-medium text-gray-900">Change Password</p>
-                 <p class="text-sm text-gray-500">Update your account password</p>
+             <!-- Change Password Section -->
+             <div class="p-4 bg-gray-50 rounded-lg">
+               <div class="flex items-center justify-between mb-4">
+                 <div>
+                   <p class="font-medium text-gray-900">Change Password</p>
+                   <p class="text-sm text-gray-500">Update your admin password</p>
+                 </div>
+                 <BaseButton variant="outline" class="!py-2" @click="showPasswordForm = !showPasswordForm">
+                   {{ showPasswordForm ? 'Cancel' : 'Update' }}
+                 </BaseButton>
                </div>
-               <BaseButton variant="outline" class="!py-2">Update</BaseButton>
+               
+               <div v-if="showPasswordForm" class="space-y-4 pt-4 border-t border-gray-200">
+                  <BaseInput 
+                    v-model="newPassword" 
+                    type="password" 
+                    label="New Password" 
+                    placeholder="Enter new password"
+                  />
+                  <BaseButton block @click="updatePassword">Save New Password</BaseButton>
+               </div>
              </div>
              
              <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">

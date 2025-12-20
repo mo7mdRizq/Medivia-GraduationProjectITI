@@ -43,7 +43,9 @@ const validate = () => {
 const handleLogin = () => {
   if (validate()) {
     // 1. Check for Admin Credentials
-    if (email.value === 'admin' && password.value === 'admin207') {
+    const storedAdmin = JSON.parse(localStorage.getItem('adminCredentials') || '{"username": "admin@gmail.com", "password": "Adminadmin207#"}')
+    
+    if (email.value === storedAdmin.username && password.value === storedAdmin.password) {
        toast.success("Welcome, Administrator", {
           transition: toast.TRANSITIONS.ZOOM,
        })
