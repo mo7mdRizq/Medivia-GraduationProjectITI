@@ -42,7 +42,7 @@ const validate = () => {
 
 const handleLogin = () => {
   if (validate()) {
-    // Check for Admin Credentials
+    // 1. Check for Admin Credentials
     if (email.value === 'admin' && password.value === 'admin207') {
        toast.success("Welcome, Administrator", {
           transition: toast.TRANSITIONS.ZOOM,
@@ -57,19 +57,26 @@ const handleLogin = () => {
        return
     }
 
-    // Normal User Login Simulation
-    toast.success("Welcome back!", {
+    // 2. Check for Registered User (from localStorage)
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const user = users.find(u => u.email === email.value && u.password === password.value)
+    
+    if (!user) {
+      toast.error('Invalid email or password. Please sign up if you don\'t have an account.', {
+        autoClose: 4000,
+      })
+      return
+    }
+    
+    // Store auth state for User
+    localStorage.setItem('isAuthenticated', 'true')
+    localStorage.setItem('userRole', 'user') // added for consistency
+    localStorage.setItem('userEmail', email.value)
+    localStorage.setItem('userName', user.fullName)
+    
+    toast.success(`Welcome back, ${user.fullName}!`, {
         transition: toast.TRANSITIONS.ZOOM,
     })
-    
-    // Set persistent auth state
-    localStorage.setItem('isAuthenticated', 'true')
-    localStorage.setItem('userRole', 'user')
-    // Extract name from email for demo user profile
-    const nameFromEmail = email.value.split('@')[0]
-    // Capitalize first letter
-    const formattedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1)
-    localStorage.setItem('userName', formattedName)
     
     // Slight delay to see the toast before redirect
     setTimeout(() => {

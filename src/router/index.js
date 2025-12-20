@@ -35,6 +35,9 @@ const router = createRouter({
             meta: { title: 'Recover Password - Medivia' }
         },
         {
+            path: '/reset-password',
+            name: 'reset-password',
+            component: () => import('../views/ResetPasswordView.vue'),
             meta: { title: 'Reset Password - Medivia' }
         },
         {
@@ -71,8 +74,19 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+    // Set page title
     document.title = to.meta.title || 'Medivia - Medical Story. One Platform.'
-    next()
+
+    // Check authentication for protected routes
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+    const publicRoutes = ['landing', 'login', 'register', 'forgot-password', 'reset-password']
+
+    // If route requires auth and user is not authenticated, redirect to login
+    if (!publicRoutes.includes(to.name) && !isAuthenticated) {
+        next({ name: 'login' })
+    } else {
+        next()
+    }
 })
 
 export default router
