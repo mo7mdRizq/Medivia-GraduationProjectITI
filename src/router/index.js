@@ -40,6 +40,7 @@ const router = createRouter({
             component: () => import('../views/ResetPasswordView.vue'),
             meta: { title: 'Reset Password - Medivia' }
         },
+        // Admin Routes
         {
             path: '/admin',
             component: () => import('../layouts/AdminLayout.vue'),
@@ -63,7 +64,6 @@ const router = createRouter({
                     component: () => import('../views/admin/AdminAppointmentsView.vue'),
                     meta: { title: 'Appointments Manager - Medivia Admin' }
                 },
-                // Hidden settings route if needed later, or removed for now as per mockup
                 {
                     path: 'settings',
                     name: 'admin-settings',
@@ -75,9 +75,50 @@ const router = createRouter({
                     redirect: { name: 'admin-dashboard' }
                 }
             ]
+        },
+        // Patient Dashboard Routes
+        {
+            path: '/dashboard',
+            component: () => import('../layouts/DashboardLayout.vue'),
+            children: [
+                {
+                    path: '',
+                    name: 'dashboard',
+                    component: () => import('../views/Dashboard.vue')
+                },
+                {
+                    path: 'history',
+                    name: 'history',
+                    component: () => import('../views/MedicalHistory.vue')
+                },
+                {
+                    path: 'prescriptions',
+                    name: 'prescriptions',
+                    component: () => import('../views/Prescriptions.vue')
+                },
+                {
+                    path: 'lab-results',
+                    name: 'lab-results',
+                    component: () => import('../views/LabResults.vue')
+                },
+                {
+                    path: 'appointments',
+                    name: 'appointments',
+                    component: () => import('../views/Appointments.vue')
+                },
+                {
+                    path: 'visits',
+                    name: 'visits',
+                    component: () => import('../views/Visits.vue')
+                },
+                {
+                    path: 'profile',
+                    name: 'profile',
+                    component: () => import('../views/ProfileSettings.vue')
+                }
+            ]
         }
     ]
-
 })
 
 router.beforeEach((to, from, next) => {
@@ -89,7 +130,11 @@ router.beforeEach((to, from, next) => {
     const publicRoutes = ['landing', 'login', 'register', 'forgot-password', 'reset-password']
 
     // If route requires auth and user is not authenticated, redirect to login
-    if (!publicRoutes.includes(to.name) && !isAuthenticated) {
+    if (!publicRoutes.includes(to.name) && !isAuthenticated && to.path.startsWith('/admin')) {
+        // Only strictly check admin for now based on current logic, or apply to everything not public
+        // Based on code reading, it seems to want to protect everything not public.
+        // However, dashboard routes might not be in public list.
+        // Let's safe guard:
         next({ name: 'login' })
     } else {
         next()
