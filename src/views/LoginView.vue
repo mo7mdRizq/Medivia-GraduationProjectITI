@@ -20,7 +20,8 @@ const validate = () => {
   
   if (!email.value) {
     errors.value.email = 'Email address is required'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+  } else if (email.value !== 'admin' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    // Allow 'admin' as a valid username, otherwise require valid email
     errors.value.email = 'Please enter a valid email address'
   }
 
@@ -41,18 +42,43 @@ const validate = () => {
 
 const handleLogin = () => {
   if (validate()) {
-    // Simulate Login
-    toast.success("Welcome back!", {
+    // 1. Check for Admin Credentials
+    const storedAdmin = JSON.parse(localStorage.getItem('adminCredentials') || '{"username": "admin@gmail.com", "password": "Adminadmin207#"}')
+    
+    if (email.value === storedAdmin.username && password.value === storedAdmin.password) {
+       toast.success("Welcome, Administrator", {
+          transition: toast.TRANSITIONS.ZOOM,
+       })
+       localStorage.setItem('isAuthenticated', 'true')
+       localStorage.setItem('userRole', 'admin')
+       localStorage.setItem('userName', 'Administrator')
+       
+       setTimeout(() => {
+           router.push('/admin/dashboard')
+       }, 500)
+       return
+    }
+
+    // 2. Check for Registered User (from localStorage)
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const user = users.find(u => u.email === email.value && u.password === password.value)
+    
+    if (!user) {
+      toast.error('Invalid email or password. Please sign up if you don\'t have an account.', {
+        autoClose: 4000,
+      })
+      return
+    }
+    
+    // Store auth state for User
+    localStorage.setItem('isAuthenticated', 'true')
+    localStorage.setItem('userRole', 'user') // added for consistency
+    localStorage.setItem('userEmail', email.value)
+    localStorage.setItem('userName', user.fullName)
+    
+    toast.success(`Welcome back, ${user.fullName}!`, {
         transition: toast.TRANSITIONS.ZOOM,
     })
-    
-    // Set persistent auth state
-    localStorage.setItem('isAuthenticated', 'true')
-    // Extract name from email for demo user profile
-    const nameFromEmail = email.value.split('@')[0]
-    // Capitalize first letter
-    const formattedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1)
-    localStorage.setItem('userName', formattedName)
     
     // Slight delay to see the toast before redirect
     setTimeout(() => {

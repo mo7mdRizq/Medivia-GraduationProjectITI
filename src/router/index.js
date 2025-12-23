@@ -39,13 +39,61 @@ const router = createRouter({
             name: 'reset-password',
             component: () => import('../views/ResetPasswordView.vue'),
             meta: { title: 'Reset Password - Medivia' }
+        },
+        {
+            path: '/admin',
+            component: () => import('../layouts/AdminLayout.vue'),
+            meta: { requiresAuth: true }, // Placeholder for auth guard
+            children: [
+                {
+                    path: 'dashboard',
+                    name: 'admin-dashboard',
+                    component: () => import('../views/admin/AdminDashboardView.vue'),
+                    meta: { title: 'Dashboard - Medivia Admin' }
+                },
+                {
+                    path: 'patients',
+                    name: 'admin-patients',
+                    component: () => import('../views/admin/AdminPatientsView.vue'),
+                    meta: { title: 'Patients Management - Medivia Admin' }
+                },
+                {
+                    path: 'appointments',
+                    name: 'admin-appointments',
+                    component: () => import('../views/admin/AdminAppointmentsView.vue'),
+                    meta: { title: 'Appointments Manager - Medivia Admin' }
+                },
+                // Hidden settings route if needed later, or removed for now as per mockup
+                {
+                    path: 'settings',
+                    name: 'admin-settings',
+                    component: () => import('../views/admin/AdminSettingsView.vue'),
+                    meta: { title: 'Settings - Medivia Admin' }
+                },
+                {
+                    path: '',
+                    redirect: { name: 'admin-dashboard' }
+                }
+            ]
         }
     ]
+
 })
 
 router.beforeEach((to, from, next) => {
+    // Set page title
     document.title = to.meta.title || 'Medivia - Medical Story. One Platform.'
-    next()
+
+    // Check authentication for protected routes
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+    const publicRoutes = ['landing', 'login', 'register', 'forgot-password', 'reset-password']
+
+    // If route requires auth and user is not authenticated, redirect to login
+    if (!publicRoutes.includes(to.name) && !isAuthenticated) {
+        next({ name: 'login' })
+    } else {
+        next()
+    }
 })
 
 export default router
