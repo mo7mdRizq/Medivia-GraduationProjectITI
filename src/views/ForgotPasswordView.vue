@@ -12,7 +12,7 @@ const router = useRouter()
 const email = ref('')
 const isLoading = ref(false)
 const errors = ref({})
-const isLoading = ref(false)
+
 
 const validate = () => {
   errors.value = {}
@@ -35,7 +35,6 @@ const validate = () => {
 
 const handleResetRequest = async () => {
   if (validate()) {
-<<<<<<< HEAD
     // Frontend-only simulation of email sending
     isLoading.value = true
     
@@ -56,51 +55,6 @@ const handleResetRequest = async () => {
     setTimeout(() => {
       router.push('/reset-password')
     }, 1000)
-=======
-    isLoading.value = true
-    try {
-      // 1. Validate Account Existence
-      const response = await authApi.requestPasswordReset(email.value)
-      
-      // 2. Prepare EmailJS Parameters
-      // TODO: Replace these placeholders with your actual EmailJS credentials
-      const serviceID = 'service_2xvwukn';
-      const templateID = 'template_ur3zlqu';
-      const publicKey = 'fnJIAKWvrKg1eD-Hn';
-
-      const templateParams = {
-        // Target Recipient (Admin) - Exhaustive list of potential keys to match your Template 'To Email' field
-        to_email: 'ahmedmakled2004@gmail.com',
-        recipient: 'ahmedmakled2004@gmail.com',
-        email: 'ahmedmakled2004@gmail.com',     // Common default
-        to: 'ahmedmakled2004@gmail.com',        // Common default
-        admin_email: 'ahmedmakled2004@gmail.com',
-
-        // Context
-        user_email: email.value,
-        reset_link: `${window.location.origin}/reset-password`,
-        message: `User (${email.value}) requested a password reset.`,
-        
-        // Standard fields
-        to_name: 'Admin',
-        from_name: 'Medivia System',
-        reply_to: email.value
-      };
-
-      // 3. Send Email
-      await emailjs.send(serviceID, templateID, templateParams, publicKey);
-
-      toast.success(`Request sent to system admin for ${email.value}`)
-
-    } catch (error) {
-      console.error("EmailJS Error details:", error)
-      // Check if it's our API error or EmailJS error
-      const errorMsg = error.text || error.message || JSON.stringify(error)
-      toast.error(`Send Failed: ${errorMsg}`)
-    } finally {
-      isLoading.value = false
-    }
->>>>>>> edit-auth
   }
 }
 </script>
@@ -134,7 +88,6 @@ const handleResetRequest = async () => {
         />
 
         <BaseButton block type="submit" :disabled="isLoading">
-<<<<<<< HEAD
           <span v-if="isLoading" class="flex items-center justify-center">
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -142,9 +95,6 @@ const handleResetRequest = async () => {
             </svg>
             Processing...
           </span>
-=======
-          <span v-if="isLoading">Sending...</span>
->>>>>>> edit-auth
           <span v-else>Send reset link</span>
         </BaseButton>
       </form>

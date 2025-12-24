@@ -52,12 +52,10 @@ const handleLogout = () => {
     >
       <!-- Logo App Section -->
       <div class="px-6 py-6 border-b border-gray-100 flex items-center gap-3">
-         <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-sm">
-            <ShieldCheckIcon class="w-6 h-6 text-white" />
-         </div>
+         <img src="/logo.png" alt="Medivia" class="h-10 w-auto" />
          <div>
-            <h1 class="font-bold text-gray-900 leading-tight">Admin Portal</h1>
-            <p class="text-xs text-gray-500">Healthcare System</p>
+            <h1 class="font-bold text-gray-900 leading-tight">Medivia Admin</h1>
+            <p class="text-xs text-gray-500">Management Portal</p>
          </div>
       </div>
 
@@ -114,10 +112,8 @@ const handleLogout = () => {
       <!-- Mobile Header -->
       <div class="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm z-30">
          <div class="flex items-center gap-3">
-             <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <ShieldCheckIcon class="w-5 h-5 text-white" />
-             </div>
-             <span class="font-bold text-gray-900">Admin Portal</span>
+             <img src="/logo.png" alt="Medivia" class="h-8 w-auto" />
+             <span class="font-bold text-gray-900">Medivia Admin</span>
          </div>
          <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
            <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" />

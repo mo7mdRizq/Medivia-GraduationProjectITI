@@ -1,10 +1,6 @@
 export default {
-    plugins: {
-<<<<<<< HEAD
-        '@tailwindcss/postcss': {},
-=======
-        tailwindcss: {},
->>>>>>> edit-doctor
-        autoprefixer: {},
-    },
+        plugins: {
+                '@tailwindcss/postcss': {},
+                autoprefixer: {},
+        },
 }

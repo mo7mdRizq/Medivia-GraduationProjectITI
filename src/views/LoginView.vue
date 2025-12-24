@@ -42,7 +42,6 @@ const validate = () => {
 
 const handleLogin = () => {
   if (validate()) {
-<<<<<<< HEAD
     // 1. Check for Admin Credentials
     const storedAdmin = JSON.parse(localStorage.getItem('adminCredentials') || '{"username": "admin@gmail.com", "password": "Adminadmin207#"}')
     
@@ -85,36 +84,6 @@ const handleLogin = () => {
     setTimeout(() => {
         router.push('/')
     }, 500)
-=======
-    // Retrieve stored user
-    const storedUserFunc = localStorage.getItem('registeredUser')
-    
-    if (!storedUserFunc) {
-       toast.error("No account found. Please register first.")
-       return
-    }
-
-    const storedUser = JSON.parse(storedUserFunc)
-
-    // Check Credentials
-    if (email.value === storedUser.email && password.value === storedUser.password) {
-        toast.success(`Welcome back, ${storedUser.name}!`, {
-            transition: toast.TRANSITIONS.ZOOM,
-        })
-        
-        // Set persistent auth state
-        localStorage.setItem('isAuthenticated', 'true')
-        localStorage.setItem('userName', storedUser.name)
-        localStorage.setItem('userEmail', storedUser.email)
-        
-        // Slight delay to see the toast before redirect
-        setTimeout(() => {
-            router.push('/')
-        }, 500)
-    } else {
-        toast.error("Invalid email or password.")
-    }
->>>>>>> edit-auth
   }
 }
 </script>

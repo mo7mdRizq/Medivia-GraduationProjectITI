@@ -142,7 +142,7 @@ const router = createRouter({
             component: () => import('../views/PrescriptionsView.vue'),
         },
         {
-            path: '/appointments',
+            path: '/appointments', // duplicate path check
             name: 'doctor-appointments',
             component: () => import('../views/AppointmentsView.vue'),
         },
@@ -155,7 +155,6 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-<<<<<<< HEAD
     // Set page title
     document.title = to.meta.title || 'Medivia - Medical Story. One Platform.'
 
@@ -163,32 +162,21 @@ router.beforeEach((to, from, next) => {
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
     const publicRoutes = ['landing', 'login', 'register', 'forgot-password', 'reset-password']
 
-    // If route requires auth and user is not authenticated, redirect to login
+    // 1. If route requires auth and user is not authenticated, redirect to login
     if (!publicRoutes.includes(to.name) && !isAuthenticated && to.meta.requiresAuth) {
-        next({ name: 'login' })
-    } else {
-        next()
-    }
-=======
-    // 1. Update Title
-    document.title = to.meta.title || 'Medivia - Medical Story. One Platform.'
-
-    // 2. Access Control
-    const publicPages = ['/login', '/register', '/forgot-password', '/reset-password']
-    const authRequired = !publicPages.includes(to.path)
-    const loggedIn = localStorage.getItem('isAuthenticated') === 'true'
-
-    if (authRequired && !loggedIn) {
-        return next('/login')
+        return next({ name: 'login' })
     }
 
-    // 3. Prevent logged-in users from visiting Auth pages
-    if (loggedIn && publicPages.includes(to.path) && to.path !== '/reset-password') {
-        return next('/')
+    // 2. Prevent logged-in users from visiting Auth pages (login, register, etc)
+    // Note: Landing page ('landing') is okay to visit even if logged in
+    const authPages = ['login', 'register', 'forgot-password', 'reset-password']
+
+    if (isAuthenticated && authPages.includes(to.name)) {
+        // Redirect to dashboard (or based on role if implemented)
+        return next({ name: 'dashboard' })
     }
 
     next()
->>>>>>> edit-auth
 })
 
 export default router
