@@ -1,4 +1,6 @@
 <script setup>
+import { RouterLink } from 'vue-router'
+
 defineProps({
   title: String,
   subtitle: String,
@@ -82,7 +84,9 @@ defineProps({
       <div class="w-full max-w-[420px]">
         <!-- Logo -->
         <div class="mb-10 flex items-center gap-3">
-          <img src="/logo.png" alt="Medivia Logo" class="h-10 w-auto" />
+          <RouterLink to="/" class="cursor-pointer">
+            <img src="/logo.png" alt="Medivia Logo" class="h-10 w-auto hover:opacity-80 transition-opacity" />
+          </RouterLink>
         </div>
 
         <slot></slot>

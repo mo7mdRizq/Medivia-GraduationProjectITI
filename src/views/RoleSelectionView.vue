@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { UserIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
 
@@ -65,7 +65,9 @@ const selectRole = (role) => {
       <!-- Header -->
       <div class="text-center mb-12">
         <div class="flex justify-center mb-6">
-          <img src="/logo.png" alt="Medivia" class="h-16 w-auto" />
+          <RouterLink to="/" class="cursor-pointer">
+            <img src="/logo.png" alt="Medivia" class="h-16 w-auto hover:opacity-80 transition-opacity" />
+          </RouterLink>
         </div>
         <h1 class="text-4xl font-bold text-gray-900 mb-4">
           Welcome to <span class="text-brand-600">Medivia</span>

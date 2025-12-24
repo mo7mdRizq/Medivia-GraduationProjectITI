@@ -44,17 +44,17 @@ const toggleSidebar = () => {
     >
       <div class="flex h-full flex-col">
         <!-- Logo -->
-        <div class="flex items-center space-x-3 border-b border-slate-800 px-6 h-16">
+        <RouterLink to="/" class="flex items-center space-x-3 border-b border-slate-800 px-6 h-16 hover:bg-slate-800/50 transition-colors">
           <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-lg shadow-lg shadow-blue-900/50">HP</div>
           <span class="text-xl font-bold tracking-tight">HealthPortal</span>
           
            <!-- Close button for mobile inside sidebar -->
-           <button @click="isSidebarOpen = false" class="lg:hidden ml-auto text-slate-400 hover:text-white">
+           <button @click.stop="isSidebarOpen = false" class="lg:hidden ml-auto text-slate-400 hover:text-white">
              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
              </svg>
            </button>
-        </div>
+        </RouterLink>
 
         <!-- Navigation -->
         <nav class="flex-1 space-y-1 px-4 py-6 overflow-y-auto">

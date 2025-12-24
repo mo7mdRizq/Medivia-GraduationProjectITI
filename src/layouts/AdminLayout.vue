@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { 
   Squares2X2Icon, 
   UsersIcon, 
@@ -51,7 +51,7 @@ const handleLogout = () => {
       ]"
     >
       <!-- Logo App Section -->
-      <div class="px-6 py-6 border-b border-gray-100 flex items-center gap-3">
+      <RouterLink to="/" class="px-6 py-6 border-b border-gray-100 flex items-center gap-3 hover:bg-gray-50 transition-colors">
          <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-sm">
             <ShieldCheckIcon class="w-6 h-6 text-white" />
          </div>
@@ -59,7 +59,7 @@ const handleLogout = () => {
             <h1 class="font-bold text-gray-900 leading-tight">Admin Portal</h1>
             <p class="text-xs text-gray-500">Healthcare System</p>
          </div>
-      </div>
+      </RouterLink>
 
       <!-- Admin Profile Badge -->
       <div class="px-4 py-6">
