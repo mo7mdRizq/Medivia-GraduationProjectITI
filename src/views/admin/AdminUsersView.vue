@@ -1,5 +1,4 @@
-<script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import { 
@@ -12,14 +11,32 @@ import {
 const searchQuery = ref('')
 const selectedRole = ref('All Roles')
 
-const users = [
-  { id: 1, name: 'Esther Howard', email: 'esther.howard@gmail.com', role: 'Doctor', status: 'Active', lastActive: '2 min ago', avatar: 'https://ui-avatars.com/api/?name=Esther+Howard&background=random' },
-  { id: 2, name: 'Cameron Williamson', email: 'cameron.williamson@gmail.com', role: 'Patient', status: 'Inactive', lastActive: '1 day ago', avatar: 'https://ui-avatars.com/api/?name=Cameron+Williamson&background=random' },
-  { id: 3, name: 'Robert Fox', email: 'robert.fox@gmail.com', role: 'Admin', status: 'Active', lastActive: '3 hours ago', avatar: 'https://ui-avatars.com/api/?name=Robert+Fox&background=random' },
-  { id: 4, name: 'Jenny Wilson', email: 'jenny.wilson@gmail.com', role: 'Doctor', status: 'Active', lastActive: '5 min ago', avatar: 'https://ui-avatars.com/api/?name=Jenny+Wilson&background=random' },
-  { id: 5, name: 'Marvin McKinney', email: 'marvin.mckinney@gmail.com', role: 'Patient', status: 'Active', lastActive: '1 hour ago', avatar: 'https://ui-avatars.com/api/?name=Marvin+McKinney&background=random' },
-  { id: 6, name: 'Jerome Bell', email: 'jerome.bell@gmail.com', role: 'Staff', status: 'Inactive', lastActive: '2 days ago', avatar: 'https://ui-avatars.com/api/?name=Jerome+Bell&background=random' },
-]
+const getRegisteredUsers = () => {
+  const usersList = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+  return usersList.map((user, index) => ({
+    id: index + 1,
+    name: user.fullName,
+    email: user.email,
+    role: 'Patient', // Default role
+    status: 'Active',
+    lastActive: 'Just now',
+    avatar: `https://ui-avatars.com/api/?name=${user.fullName.split(' ').join('+')}&background=random`
+  }))
+}
+
+const users = ref(getRegisteredUsers())
+
+const filteredUsers = computed(() => {
+  return users.value.filter(user => {
+    const matchesSearch = !searchQuery.value || 
+      user.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+    
+    const matchesRole = selectedRole.value === 'All Roles' || user.role === selectedRole.value
+    
+    return matchesSearch && matchesRole
+  })
+})
 
 const roles = ['All Roles', 'Admin', 'Doctor', 'Patient', 'Staff']
 </script>
@@ -88,7 +105,7 @@ const roles = ['All Roles', 'Admin', 'Doctor', 'Patient', 'Staff']
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 transition-colors">
+            <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-10 w-10">
@@ -144,7 +161,7 @@ const roles = ['All Roles', 'Admin', 'Doctor', 'Patient', 'Staff']
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
             <p class="text-sm text-gray-700">
-              Showing <span class="font-medium">1</span> to <span class="font-medium">6</span> of <span class="font-medium">97</span> results
+              Showing <span class="font-medium">1</span> to <span class="font-medium">{{ filteredUsers.length }}</span> of <span class="font-medium">{{ filteredUsers.length }}</span> results
             </p>
           </div>
           <div>

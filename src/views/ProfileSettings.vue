@@ -1,32 +1,79 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 
-// --- Data ---
+const userEmail = localStorage.getItem('userEmail')
 const personalInfo = ref({
-  firstName: 'John',
-  lastName: 'Doe',
-  dob: '1985-06-15', // Changed to ISO date for input type="date"
-  gender: 'Male',
-  email: 'john.doe@email.com',
-  phone: '(555) 123-4567',
-  address: '123 Main Street',
-  city: 'San Francisco',
-  state: 'CA',
-  zip: '94102'
+  firstName: '',
+  lastName: '',
+  dob: '',
+  gender: '',
+  email: userEmail || '',
+  phone: '',
+  address: '',
+  city: '',
+  state: '',
+  zip: ''
 })
 
 const medicalInfo = ref({
-  bloodType: 'O+',
-  allergies: ['Penicillin', 'Shellfish'],
-  conditions: ['Hypertension', 'Seasonal Allergies']
+  bloodType: '',
+  allergies: [],
+  conditions: []
 })
 
 const emergencyContact = ref({
-  name: 'Jane Doe',
-  relationship: 'Spouse',
-  phone: '(555) 987-6543',
-  email: 'jane.doe@email.com'
+  name: '',
+  relationship: '',
+  phone: '',
+  email: ''
 })
+
+onMounted(() => {
+  if (!userEmail) return
+
+  // 1. Try to load from specific profile data
+  const savedProfile = localStorage.getItem(`profile_data_${userEmail}`)
+  if (savedProfile) {
+    const data = JSON.parse(savedProfile)
+    personalInfo.value = data.personalInfo || personalInfo.value
+    medicalInfo.value = data.medicalInfo || medicalInfo.value
+    emergencyContact.value = data.emergencyContact || emergencyContact.value
+  } else {
+    // 2. Fallback to registration data
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const user = users.find(u => u.email === userEmail)
+    if (user) {
+      const names = user.fullName.split(' ')
+      personalInfo.value.firstName = names[0] || ''
+      personalInfo.value.lastName = names.slice(1).join(' ') || ''
+      personalInfo.value.email = user.email
+      personalInfo.value.phone = user.phone || ''
+      personalInfo.value.dob = user.dob || ''
+      personalInfo.value.gender = user.gender || ''
+    }
+  }
+})
+
+const saveProfileToLocal = () => {
+  if (!userEmail) return
+  const data = {
+    personalInfo: personalInfo.value,
+    medicalInfo: medicalInfo.value,
+    emergencyContact: emergencyContact.value
+  }
+  localStorage.setItem(`profile_data_${userEmail}`, JSON.stringify(data))
+  
+  // Also update registeredUsers if email/name changed for login consistency
+  const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+  const userIndex = users.findIndex(u => u.email === userEmail)
+  if (userIndex !== -1) {
+    users[userIndex].fullName = `${personalInfo.value.firstName} ${personalInfo.value.lastName}`.trim()
+    users[userIndex].phone = personalInfo.value.phone
+    users[userIndex].dob = personalInfo.value.dob
+    users[userIndex].gender = personalInfo.value.gender
+    localStorage.setItem('registeredUsers', JSON.stringify(users))
+  }
+}
 
 // --- Edit States ---
 const isEditingPersonal = ref(false)
@@ -34,7 +81,7 @@ const isEditingMedical = ref(false)
 const isEditingContact = ref(false)
 const isEditingSecurity = ref(false)
 
-// --- Edit Buffers (for Cancel functionality) ---
+// --- Edit Buffers ---
 const personalInfoBuffer = ref({})
 const medicalInfoBuffer = ref({ allergies: [], conditions: [] })
 const emergencyContactBuffer = ref({})
@@ -52,39 +99,31 @@ const securityForm = reactive({
 
 // Personal Info
 const startEditingPersonal = () => {
-  personalInfoBuffer.value = { ...personalInfo.value }
+  personalInfoBuffer.value = JSON.parse(JSON.stringify(personalInfo.value))
   isEditingPersonal.value = true
 }
 const cancelEditingPersonal = () => {
-  personalInfo.value = { ...personalInfoBuffer.value }
+  personalInfo.value = JSON.parse(JSON.stringify(personalInfoBuffer.value))
   isEditingPersonal.value = false
 }
 const savePersonal = () => {
-  // In a real app, API call here
+  saveProfileToLocal()
   isEditingPersonal.value = false
 }
 
 // Medical Info
 const startEditingMedical = () => {
-  // Deep copy for arrays
-  medicalInfoBuffer.value = {
-    ...medicalInfo.value,
-    allergies: [...medicalInfo.value.allergies],
-    conditions: [...medicalInfo.value.conditions]
-  }
+  medicalInfoBuffer.value = JSON.parse(JSON.stringify(medicalInfo.value))
   isEditingMedical.value = true
 }
 const cancelEditingMedical = () => {
-  medicalInfo.value = {
-    ...medicalInfoBuffer.value,
-    allergies: [...medicalInfoBuffer.value.allergies],
-    conditions: [...medicalInfoBuffer.value.conditions]
-  }
+  medicalInfo.value = JSON.parse(JSON.stringify(medicalInfoBuffer.value))
   newAllergy.value = ''
   newCondition.value = ''
   isEditingMedical.value = false
 }
 const saveMedical = () => {
+  saveProfileToLocal()
   isEditingMedical.value = false
 }
 const addAllergy = () => {
@@ -108,14 +147,15 @@ const removeCondition = (index) => {
 
 // Emergency Contact
 const startEditingContact = () => {
-  emergencyContactBuffer.value = { ...emergencyContact.value }
+  emergencyContactBuffer.value = JSON.parse(JSON.stringify(emergencyContact.value))
   isEditingContact.value = true
 }
 const cancelEditingContact = () => {
-  emergencyContact.value = { ...emergencyContactBuffer.value }
+  emergencyContact.value = JSON.parse(JSON.stringify(emergencyContactBuffer.value))
   isEditingContact.value = false
 }
 const saveContact = () => {
+  saveProfileToLocal()
   isEditingContact.value = false
 }
 
@@ -130,10 +170,19 @@ const cancelEditingSecurity = () => {
   isEditingSecurity.value = false
 }
 const saveSecurity = () => {
-  // API Call logic
   isEditingSecurity.value = false
 }
-
+const calculateAge = computed(() => {
+  if (!personalInfo.value.dob) return ''
+  const birthDate = new Date(personalInfo.value.dob)
+  const today = new Date()
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const m = today.getMonth() - birthDate.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--
+  }
+  return `(${age} years old)`
+})
 </script>
 
 <template>
@@ -185,7 +234,7 @@ const saveSecurity = () => {
         <div v-if="!isEditingPersonal" class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
           <div><p class="text-sm text-slate-500 mb-1">First Name</p><p class="font-medium text-slate-900">{{ personalInfo.firstName }}</p></div>
           <div><p class="text-sm text-slate-500 mb-1">Last Name</p><p class="font-medium text-slate-900">{{ personalInfo.lastName }}</p></div>
-          <div><p class="text-sm text-slate-500 mb-1">Date of Birth</p><p class="font-medium text-slate-900">{{ personalInfo.dob }} (40 years old)</p></div>
+          <div><p class="text-sm text-slate-500 mb-1">Date of Birth</p><p class="font-medium text-slate-900">{{ personalInfo.dob }} {{ calculateAge }}</p></div>
           <div><p class="text-sm text-slate-500 mb-1">Gender</p><p class="font-medium text-slate-900">{{ personalInfo.gender }}</p></div>
           <div><p class="text-sm text-slate-500 mb-1">Email</p><p class="font-medium text-slate-900">{{ personalInfo.email }}</p></div>
           <div><p class="text-sm text-slate-500 mb-1">Phone</p><p class="font-medium text-slate-900">{{ personalInfo.phone }}</p></div>

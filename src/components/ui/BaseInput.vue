@@ -10,7 +10,7 @@ const props = defineProps({
   },
   placeholder: String,
   error: String,
-  icon: Object
+  icon: [Object, Function]
 })
 
 const emit = defineEmits(['update:modelValue'])

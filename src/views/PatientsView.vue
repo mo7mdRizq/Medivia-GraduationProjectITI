@@ -122,80 +122,24 @@ import { ref, computed } from 'vue';
 
 const searchQuery = ref('');
 
-const patients = ref([
-    {
-        id: 1,
-        name: 'John Martinez',
-        age: 45,
-        gender: 'Male',
+const getRegisteredPatients = () => {
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    // Transform registered users into the patient format expected by this view
+    return users.map((user, index) => ({
+        id: index + 100, // Offset to avoid conflict with potential other IDs
+        name: user.fullName,
+        age: 30, // Default age as not collected during signup
+        gender: 'Not specified',
         status: 'Active',
-        lastVisit: 'Dec 5, 2025',
-        phone: '(555) 123-4567',
-        email: 'john.martinez@email.com',
-        conditions: ['Hypertension', 'Type 2 Diabetes'],
-        nextAppointment: 'Dec 15, 2025'
-    },
-    {
-        id: 2,
-        name: 'Emily Johnson',
-        age: 32,
-        gender: 'Female',
-        status: 'Active',
-        lastVisit: 'Dec 4, 2025',
-        phone: '(555) 234-5678',
-        email: 'emily.johnson@email.com',
-        conditions: ['Seasonal Allergies'],
-        nextAppointment: 'Dec 10, 2025'
-    },
-    {
-        id: 3,
-        name: 'Michael Brown',
-        age: 58,
-        gender: 'Male',
-        status: 'Active',
-        lastVisit: 'Dec 3, 2025',
-        phone: '(555) 345-6789',
-        email: 'michael.brown@email.com',
-        conditions: ['Hypertension', 'High Cholesterol'],
-        nextAppointment: 'Dec 18, 2025'
-    },
-    {
-        id: 4,
-        name: 'Sarah Davis',
-        age: 41,
-        gender: 'Female',
-        status: 'Active',
-        lastVisit: 'Nov 28, 2025',
-        phone: '(555) 456-7890',
-        email: 'sarah.davis@email.com',
-        conditions: ['Asthma'],
-        nextAppointment: 'Dec 20, 2025'
-    },
-    {
-        id: 5,
-        name: 'Robert Wilson',
-        age: 67,
-        gender: 'Male',
-        status: 'Active',
-        lastVisit: 'Dec 1, 2025',
-        phone: '(555) 567-8901',
-        email: 'robert.wilson@email.com',
-        conditions: ['Type 2 Diabetes', 'Hypertension', 'High Cholesterol'],
-        nextAppointment: 'Jan 5, 2026'
-    },
-    {
-        id: 6,
-        name: 'Jessica Lee',
-        age: 29,
-        gender: 'Female',
-        status: 'Active',
-        lastVisit: 'Dec 7, 2025',
-        phone: '(555) 678-9012',
-        email: 'jessica.lee@email.com',
+        lastVisit: 'Never',
+        phone: 'Not provided',
+        email: user.email,
         conditions: [],
-        nextAppointment: 'Dec 28, 2025'
-    }
-]);
+        nextAppointment: 'None scheduled'
+    }))
+}
+
+const patients = ref(getRegisteredPatients());
 
 const activePatientsCount = computed(() => patients.value.filter(p => p.status === 'Active').length);
 const inactivePatientsCount = computed(() => patients.value.length - activePatientsCount.value);

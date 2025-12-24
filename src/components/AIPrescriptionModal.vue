@@ -76,6 +76,7 @@ const fileToBase64 = (file) => {
 }
 
 const analysisError = ref(null)
+const aiExtractionNote = ref('')
 
 const processFile = async () => {
   if (!uploadedFile.value) return
@@ -116,7 +117,7 @@ const processFile = async () => {
             content: [
               { 
                 type: "text", 
-                text: "Extract the following from this prescription: medication name, dosage, frequency, instructions, and doctor name. Format as JSON with keys: medication, dosage, frequency, instructions, doctor." 
+                text: "Extract the following details from this medical prescription: 1) Medication name (the primary drug), 2) Dosage (strength like 500mg), 3) Frequency (how often to take it), 4) Instructions (special advice), and 5) Doctor's name. Format the output as a JSON object with keys: medication, dosage, frequency, instructions, doctor." 
               },
               {
                 type: "image_url",
@@ -161,7 +162,9 @@ const processFile = async () => {
 
     // Fallback check: if medication is still empty, let user know
     if (!extractedData.value.medication) {
-      console.warn('Medication name was not found in the extraction.')
+      aiExtractionNote.value = 'AI could not clearly identify the medication name. Please enter it manually.'
+    } else {
+      aiExtractionNote.value = ''
     }
 
     analysisProgress.value = 100
@@ -369,10 +372,17 @@ const savePrescription = () => {
                </div>
              </div>
 
-             <div>
-               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Instructions</label>
-               <textarea v-model="extractedData.instructions" rows="3" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"></textarea>
-             </div>
+              <div v-if="aiExtractionNote" class="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-700 text-sm mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ aiExtractionNote }}
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Instructions</label>
+                <textarea v-model="extractedData.instructions" rows="3" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"></textarea>
+              </div>
 
              <!-- Validation Error -->
              <div v-if="validationError" class="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm mt-4">

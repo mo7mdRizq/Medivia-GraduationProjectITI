@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { 
@@ -13,105 +13,36 @@ import {
   TrashIcon
 } from '@heroicons/vue/24/outline'
 
-const stats = [
-  { name: 'Total Patients', value: '7' },
-  { name: 'Active Patients', value: '6', color: 'text-green-600', bg: 'bg-green-50' },
-  { name: 'Inactive Patients', value: '1', color: 'text-gray-600', bg: 'bg-gray-50' },
-]
+const searchQuery = ref('')
 
-const patients = ref([
- {
-    id: 1,
-    name: 'John Martinez',
-    age: '45 years',
-    gender: 'Male',
-    status: 'Active',
-    phone: '(555) 123-4567',
-    email: 'john.martinez@email.com',
-    lastVisit: 'Dec 5, 2025',
-    doctor: 'Dr. Sarah Chen',
-    tags: ['Hypertension', 'Type 2 Diabetes'],
-    avatarColor: 'bg-blue-600'
-  },
-  {
-    id: 2,
-    name: 'Emily Johnson',
-    age: '32 years',
-    gender: 'Female',
-    status: 'Active',
-    phone: '(555) 234-5678',
-    email: 'emily.johnson@email.com',
-    lastVisit: 'Dec 4, 2025',
-    doctor: 'Dr. Michael Rodriguez',
-    tags: ['Seasonal Allergies'],
-    avatarColor: 'bg-indigo-600'
-  },
-  {
-    id: 3,
-    name: 'Michael Brown',
-    age: '58 years',
-    gender: 'Male',
-    status: 'Active',
-    phone: '(555) 345-6789',
-    email: 'michael.brown@email.com',
-    lastVisit: 'Dec 3, 2025',
-    doctor: 'Dr. Sarah Chen',
-    tags: ['Hypertension', 'High Cholesterol'],
-    avatarColor: 'bg-purple-600'
-  },
-  {
-    id: 4,
-    name: 'Sarah Davis',
-    age: '41 years',
-    gender: 'Female',
-    status: 'Active',
-    phone: '(555) 456-7890',
-    email: 'sarah.davis@email.com',
-    lastVisit: 'Nov 28, 2025',
-    doctor: 'Dr. Lisa Wang',
-    tags: ['Asthma'],
-    avatarColor: 'bg-indigo-600' // Using existing colors as palette
-  },
-  {
-      id: 5,
-      name: 'Robert Wilson',
-      age: '67 years',
-      gender: 'Male',
-      status: 'Active',
-      phone: '(555) 567-8901',
-      email: 'robert.wilson@email.com',
-      lastVisit: 'Dec 1, 2025',
-      doctor: 'Dr. Sarah Chen',
-      tags: ['Type 2 Diabetes', 'Hypertension'],
-      avatarColor: 'bg-blue-600'
-  },
-  {
-      id: 6,
-      name: 'Jessica Lee',
-      age: '29 years',
-      gender: 'Female',
-      status: 'Active',
-      phone: '(555) 678-9012',
-      email: 'jessica.lee@email.com',
-      lastVisit: 'Dec 7, 2025',
-      doctor: 'Dr. Michael Rodriguez',
-      tags: [],
-      avatarColor: 'bg-purple-600'
-  },
-  {
-      id: 7,
-      name: 'Christopher Moore',
-      age: '55 years',
-      gender: 'Male',
-      status: 'Inactive',
-      phone: '(555) 123-4568',
-      email: 'chris.moore@email.com',
-      lastVisit: 'Oct 20, 2025',
-      doctor: 'Dr. Lisa Wang',
-      tags: ['High Cholesterol'],
-      avatarColor: 'bg-indigo-600'
-  }
-])
+const filteredPatients = computed(() => {
+  const q = searchQuery.value.toLowerCase()
+  if (!q) return patients.value
+  return patients.value.filter(p => 
+    p.name.toLowerCase().includes(q) ||
+    p.email.toLowerCase().includes(q) ||
+    p.phone.toLowerCase().includes(q)
+  )
+})
+
+const getRegisteredPatients = () => {
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    return users.map((user, index) => ({
+        id: index + 100,
+        name: user.fullName,
+        age: 'Not specified',
+        gender: 'Not specified',
+        status: 'Active',
+        phone: 'Not provided',
+        email: user.email,
+        lastVisit: 'Never',
+        doctor: 'Unassigned',
+        tags: [],
+        avatarColor: 'bg-indigo-600'
+    }))
+}
+
+const patients = ref(getRegisteredPatients());
 </script>
 
 <template>
@@ -143,6 +74,7 @@ const patients = ref([
                 <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
             </div>
             <input 
+                v-model="searchQuery"
                 type="text" 
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:placeholder-gray-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
                 placeholder="Search by name, email, or phone..." 
@@ -152,9 +84,8 @@ const patients = ref([
 
     <h2 class="text-lg font-medium text-gray-900">Patients</h2>
 
-    <!-- Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="patient in patients" :key="patient.id" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div v-for="patient in filteredPatients" :key="patient.id" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
           <div class="p-6">
               <!-- Header -->
               <div class="flex items-start justify-between mb-6">

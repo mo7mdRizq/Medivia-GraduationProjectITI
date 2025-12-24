@@ -17,9 +17,26 @@ import {
 Chart.register(...registerables)
 
 const showModal = ref(false)
+const query = ref('')
+
+const filteredResults = computed(() => {
+  const q = query.value.toLowerCase()
+  if (!q) return labResults.value
+  return labResults.value.filter(r => 
+    (r.testName && r.testName.toLowerCase().includes(q)) ||
+    (r.category && r.category.toLowerCase().includes(q)) ||
+    (r.orderedBy && r.orderedBy.toLowerCase().includes(q)) ||
+    (r.status && r.status.toLowerCase().includes(q))
+  )
+})
 
 const toggleResult = (index) => {
-  labResults.value[index].expanded = !labResults.value[index].expanded
+  // Find the actual item in labResults based on the filtered result
+  const result = filteredResults.value[index]
+  const originalIndex = labResults.value.findIndex(r => r.id === result.id)
+  if (originalIndex !== -1) {
+    labResults.value[originalIndex].expanded = !labResults.value[originalIndex].expanded
+  }
 }
 
 const handleAddResult = (newResult) => {
@@ -203,10 +220,10 @@ const downloadPDF = (result) => {
       </button>
     </div>
 
-    <!-- Search Bar -->
     <div class="relative mb-6">
       <input type="text" 
-             placeholder="Search by doctor, diagnosis, treatment, or visit type..." 
+             v-model="query"
+             placeholder="Search by test, category, or doctor..." 
              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pl-12 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 placeholder:text-slate-400 font-sans">
       <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-3.5 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
@@ -242,12 +259,12 @@ const downloadPDF = (result) => {
 
     <!-- Results Count -->
     <div class="mb-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wide">Showing {{ labResults.length }} of {{ labResults.length }} test results</p>
+      <p class="text-xs text-slate-500 uppercase tracking-wide">Showing {{ filteredResults.length }} of {{ labResults.length }} test results</p>
     </div>
 
     <!-- Lab Results List -->
     <div class="space-y-4">
-      <div v-for="(result, index) in labResults" 
+      <div v-for="(result, index) in filteredResults" 
            :key="result.id" 
            :class="result.status === 'Attention' ? 'bg-orange-50/30 border-orange-200' : 'bg-teal-50/30 border-teal-100'"
            class="border rounded-xl overflow-hidden shadow-sm transition-all duration-200">

@@ -55,24 +55,8 @@ const BRAND_SKY = '#3B82F6'
 const chartLabels = ['Nov 1', 'Nov 8', 'Nov 15', 'Nov 22', 'Nov 29', 'Dec 6']
 
 // Blood Pressure Data
-const bpData = [
-  { date: 'Nov 1', systolic: 138, diastolic: 88 },
-  { date: 'Nov 8', systolic: 135, diastolic: 86 },
-  { date: 'Nov 15', systolic: 130, diastolic: 84 },
-  { date: 'Nov 22', systolic: 124, diastolic: 81 },
-  { date: 'Nov 29', systolic: 120, diastolic: 79 },
-  { date: 'Dec 6', systolic: 118, diastolic: 78 }
-]
-
-// Glucose Data
-const glucoseData = [
-  { date: 'Nov 1', fasting: 98, postMeal: 135 },
-  { date: 'Nov 8', fasting: 95, postMeal: 128 },
-  { date: 'Nov 15', fasting: 92, postMeal: 126 },
-  { date: 'Nov 22', fasting: 96, postMeal: 130 },
-  { date: 'Nov 29', fasting: 90, postMeal: 122 },
-  { date: 'Dec 6', fasting: 88, postMeal: 118 }
-]
+const bpData = []
+const glucoseData = []
 
 const initCharts = () => {
   // BP Chart

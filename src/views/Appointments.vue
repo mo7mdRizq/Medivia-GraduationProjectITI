@@ -5,6 +5,7 @@ import Swal from 'sweetalert2'
 import { appointments, addAppointment, upcomingCount, pendingCount, pastCount, totalAppointments } from '../stores/appointmentsStore'
 
 const showModal = ref(false)
+const query = ref('')
 
 const activeTab = ref('upcoming')
 
@@ -16,10 +17,19 @@ const tabs = computed(() => [
 ])
 
 const filteredAppointments = computed(() => {
-  if (activeTab.value === 'all') {
-    return appointments.value
+  let filtered = appointments.value
+  
+  if (activeTab.value !== 'all') {
+    filtered = filtered.filter(apt => apt.category === activeTab.value)
   }
-  return appointments.value.filter(apt => apt.category === activeTab.value)
+
+  const q = query.value.toLowerCase()
+  if (!q) return filtered
+
+  return filtered.filter(apt => 
+    apt.doctor.toLowerCase().includes(q) ||
+    (apt.specialty && apt.specialty.toLowerCase().includes(q))
+  )
 })
 
 const handleBookAppointment = (newAppointment) => {
@@ -102,10 +112,10 @@ const cancelAppointment = async (apt) => {
       </button>
     </div>
 
-    <!-- Search Bar -->
     <div class="relative mb-6">
       <input type="text" 
-             placeholder="Search by doctor, diagnosis, treatment, or visit type..." 
+             v-model="query"
+             placeholder="Search by doctor or specialty..." 
              class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pl-12 text-sm outline-none focus:border-[#5A4FF3] focus:ring-4 focus:ring-indigo-100/50 placeholder:text-slate-400 transition-all">
       <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-3.5 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />

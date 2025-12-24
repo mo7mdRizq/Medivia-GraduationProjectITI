@@ -12,6 +12,19 @@ import {
 } from '../stores/visitsStore'
 
 const showModal = ref(false)
+const query = ref('')
+
+const filteredVisits = computed(() => {
+  const q = query.value.toLowerCase()
+  if (!q) return visits.value
+  return visits.value.filter(v => 
+    (v.doctor && v.doctor.toLowerCase().includes(q)) ||
+    (v.diagnosis && v.diagnosis.toLowerCase().includes(q)) ||
+    (v.chiefComplaint && v.chiefComplaint.toLowerCase().includes(q)) ||
+    (v.type && v.type.toLowerCase().includes(q)) ||
+    (v.specialty && v.specialty.toLowerCase().includes(q))
+  )
+})
 
 const toggleVisit = (id) => {
   const visit = visits.value.find(v => v.id === id)
@@ -95,6 +108,7 @@ const downloadVisitSummary = (visit) => {
     <!-- Search Bar -->
     <div class="relative mb-6">
       <input type="text" 
+             v-model="query"
              placeholder="Search by doctor, diagnosis, treatment, or visit type..." 
              class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pl-12 text-sm outline-none focus:border-[#5A4FF3] focus:ring-4 focus:ring-indigo-100/50 transition-all">
       <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-3.5 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,12 +134,12 @@ const downloadVisitSummary = (visit) => {
 
     <!-- Showing Count -->
     <div class="mb-4">
-      <p class="text-sm text-slate-500">Showing {{ visits.length }} of {{ totalVisits }} visits</p>
+      <p class="text-sm text-slate-500">Showing {{ filteredVisits.length }} of {{ totalVisits }} visits</p>
     </div>
 
     <!-- Visits List -->
     <div class="space-y-4">
-      <div v-for="visit in visits" 
+      <div v-for="visit in filteredVisits" 
            :key="visit.id" 
            class="bg-white border border-slate-200 rounded-xl overflow-hidden transition-all duration-200"
            :class="visit.expanded ? 'shadow-md ring-1 ring-slate-200' : 'hover:shadow-sm'">

@@ -1,5 +1,4 @@
-<script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { 
   MagnifyingGlassIcon, 
   ChevronDownIcon, 
@@ -18,92 +17,18 @@ const stats = [
   { name: 'Completed', value: '1', bg: 'bg-blue-50', color: 'text-blue-600' },
 ]
 
-const appointments = ref([
-  {
-    id: 1,
-    patient: 'John Martinez',
-    date: 'Dec 8, 2025',
-    time: '09:00 (30 min)',
-    doctor: 'Dr. Sarah Chen',
-    type: 'Follow-up',
-    status: 'Confirmed',
-    expanded: false,
-    phone: '(555) 456-7890',
-    email: 'john.martinez@email.com',
-    reason: 'Asthma control assessment',
-    initial: 'JM',
-    color: 'bg-indigo-600'
-  },
-  {
-    id: 2,
-    patient: 'Emily Johnson',
-    date: 'Dec 8, 2025',
-    time: '10:00 (45 min)',
-    doctor: 'Dr. Michael Rodriguez',
-    type: 'Initial Consultation',
-    status: 'Confirmed',
-    expanded: false,
-    initial: 'EJ',
-    color: 'bg-indigo-600'
-  },
-  {
-    id: 3,
-    patient: 'Michael Brown',
-    date: 'Dec 8, 2025',
-    time: '11:30 (60 min)',
-    doctor: 'Dr. Sarah Chen',
-    type: 'Annual Physical',
-    status: 'Pending',
-    expanded: false,
-    initial: 'MB',
-    color: 'bg-indigo-600'
-  },
-  {
-    id: 4, 
-    patient: 'Sarah Davis',
-    date: 'Dec 8, 2025',
-    time: '14:00 (30 min)',
-    doctor: 'Dr. Lisa Wang',
-    type: 'Follow-up',
-    status: 'Confirmed',
-    expanded: true,
-    phone: '(555) 456-7890',
-    email: 'sarah.davis@email.com',
-    duration: '30 min',
-    reason: 'Asthma control assessment',
-    initial: 'SD',
-    color: 'bg-indigo-600'
-  },
-   {
-    id: 5,
-    patient: 'Robert Wilson',
-    date: 'Dec 8, 2025',
-    time: '15:30 (20 min)',
-    doctor: 'Dr. Sarah Chen',
-    type: 'Lab Results Review',
-    status: 'Confirmed',
-    expanded: false,
-    initial: 'RW',
-    color: 'bg-indigo-600'
-  },
-  {
-    id: 6,
-    patient: 'Lisa Anderson',
-    date: 'Dec 9, 2025',
-    time: '09:30 (30 min)',
-    doctor: 'Dr. Lisa Wang',
-    type: 'Follow-up',
-    status: 'Pending',
-    urgent: true,
-    expanded: true,
-    phone: '(555) 012-3456',
-    email: 'lisa.anderson@email.com',
-    duration: '30 min',
-    reason: 'Joint pain assessment and treatment review',
-    initial: 'LA',
-    color: 'bg-indigo-600'
-  }
-])
+const appointments = ref([])
+const searchQuery = ref('')
+
+const filteredAppointments = computed(() => {
+  const q = searchQuery.value.toLowerCase()
+  if (!q) return appointments.value
+  return appointments.value.filter(a => 
+    a.patient.toLowerCase().includes(q) ||
+    a.doctor.toLowerCase().includes(q) ||
+    a.type.toLowerCase().includes(q)
+  )
+})
 
 const toggleExpand = (id) => {
     const appt = appointments.value.find(a => a.id === id)
@@ -134,6 +59,7 @@ const toggleExpand = (id) => {
                 <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" />
             </div>
             <input 
+                v-model="searchQuery"
                 type="text" 
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
                 placeholder="Search by patient, doctor, or appointment type..." 
@@ -144,7 +70,7 @@ const toggleExpand = (id) => {
     <h2 class="text-lg font-medium text-gray-900">Appointments</h2>
 
     <div class="space-y-4">
-      <div v-for="appt in appointments" :key="appt.id" class="bg-white rounded-[10px] border border-gray-100 shadow-sm overflow-hidden mb-6">
+      <div v-for="appt in filteredAppointments" :key="appt.id" class="bg-white rounded-[10px] border border-gray-100 shadow-sm overflow-hidden mb-6">
          <!-- Summary Row -->
          <div class="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors" @click="toggleExpand(appt.id)">
              <div class="flex items-center gap-5 flex-1">

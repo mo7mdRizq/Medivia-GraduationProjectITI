@@ -12,6 +12,18 @@ import {
 } from '../stores/prescriptionsStore'
 
 const showAIModal = ref(false)
+const query = ref('')
+
+const filteredPrescriptions = computed(() => {
+  const q = query.value.toLowerCase()
+  if (!q) return prescriptions.value
+  return prescriptions.value.filter(p => 
+    (p.medication && p.medication.toLowerCase().includes(q)) ||
+    (p.doctor && p.doctor.toLowerCase().includes(q)) ||
+    (p.instructions && p.instructions.toLowerCase().includes(q)) ||
+    (p.status && p.status.toLowerCase().includes(q))
+  )
+})
 
 const handleAddPrescription = (newPrescription) => {
   addPrescription(newPrescription)
@@ -84,10 +96,10 @@ const requestRefill = async (item) => {
       </button>
     </div>
 
-    <!-- Search Bar -->
     <div class="relative mb-8">
       <input type="text" 
-             placeholder="Search by doctor, medication, or treatment type..." 
+             v-model="query"
+             placeholder="Search by medication, doctor, or status..." 
              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pl-12 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 placeholder:text-slate-400">
       <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-3.5 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
@@ -117,7 +129,7 @@ const requestRefill = async (item) => {
 
     <!-- Prescriptions Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div v-for="prescription in prescriptions" :key="prescription.id" class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div v-for="prescription in filteredPrescriptions" :key="prescription.id" class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
         
         <!-- Card Header -->
         <div class="flex justify-between items-start mb-4">

@@ -6,12 +6,15 @@ import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import SocialAuthButtons from '../components/auth/SocialAuthButtons.vue'
-import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
+import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, PhoneIcon, CalendarDaysIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 
 const fullName = ref('')
 const email = ref('')
+const phone = ref('')
+const dob = ref('')
+const gender = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
@@ -21,29 +24,31 @@ const errors = ref({})
 const validate = () => {
   errors.value = {}
   
-  // Full Name: Letters only (no numbers, no special characters)
   if (!fullName.value) {
     errors.value.fullName = 'Full Name is required'
   } else if (!/^[A-Za-z\s]+$/.test(fullName.value)) {
     errors.value.fullName = 'Full Name must contain letters only'
   }
 
-  // Email: Strict validation (Must contain Name AND Numbers before @, and end in .com)
-  // Regex Explanation:
-  // ^(?=.*[A-Za-z])(?=.*\d)  -> Lookahead ensures at least one letter and one digit exist
-  // [A-Za-z\d]+              -> The local part consists of letters and digits
-  // @                        -> Literal @
-  // [a-zA-Z]+                -> Domain name (letters)
-  // \.com$                   -> Must end in .com
   const emailRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+@[a-zA-Z]+\.com$/
-  
   if (!email.value) {
     errors.value.email = 'Email address is required'
   } else if (!emailRegex.test(email.value)) {
     errors.value.email = 'Email must contain letters AND numbers before @, and end in .com (e.g., user123@gmail.com)'
   }
 
-  // Password: Must have uppercase, lowercase, number, symbol, min 8 chars
+  if (!phone.value) {
+    errors.value.phone = 'Phone number is required'
+  }
+
+  if (!dob.value) {
+    errors.value.dob = 'Date of birth is required'
+  }
+
+  if (!gender.value) {
+    errors.value.gender = 'Gender is required'
+  }
+
   if (!password.value) {
     errors.value.password = 'Password is required'
   } else if (password.value.length < 8) {
@@ -58,7 +63,6 @@ const validate = () => {
     errors.value.password = 'Password must contain at least one symbol (!@#$%^&*)'
   }
 
-  // Confirm Password
   if (!confirmPassword.value) {
     errors.value.confirmPassword = 'Please confirm your password'
   } else if (confirmPassword.value !== password.value) {
@@ -66,19 +70,15 @@ const validate = () => {
   }
   
   const isValid = Object.keys(errors.value).length === 0
-  
   if (!isValid) {
-      // Show first error as toast
       const firstError = Object.values(errors.value)[0]
       toast.error(firstError)
   }
-
   return isValid
 }
 
 const handleRegister = () => {
   if (validate()) {
-    // Check if user already exists
     const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
     const userExists = users.some(user => user.email === email.value)
     
@@ -87,13 +87,24 @@ const handleRegister = () => {
       return
     }
     
-    // Store new user credentials
     users.push({
       fullName: fullName.value,
       email: email.value,
-      password: password.value // In a real app, this would be hashed
+      phone: phone.value,
+      dob: dob.value,
+      gender: gender.value,
+      password: password.value
     })
     localStorage.setItem('registeredUsers', JSON.stringify(users))
+    
+    const keysToClear = [
+      'medivia_appointments',
+      'medivia_visits',
+      'medivia_prescriptions',
+      'medivia_lab_results',
+      'medivia_medical_history'
+    ]
+    keysToClear.forEach(key => localStorage.removeItem(key))
     
     toast.success('Registration successful! Please login.')
     router.push('/login')
@@ -135,6 +146,41 @@ const handleRegister = () => {
           :icon="EnvelopeIcon"
           :error="errors.email"
         />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <BaseInput 
+            v-model="phone"
+            label="Phone Number"
+            placeholder="Enter your phone"
+            type="tel"
+            :icon="PhoneIcon"
+            :error="errors.phone"
+          />
+
+          <BaseInput 
+            v-model="dob"
+            label="Date of Birth"
+            type="date"
+            :icon="CalendarDaysIcon"
+            :error="errors.dob"
+          />
+        </div>
+
+        <div class="mb-5">
+          <label class="block text-sm font-semibold text-gray-800 mb-2">Gender</label>
+          <div class="relative">
+             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <UserIcon class="h-5 w-5" />
+             </div>
+             <select v-model="gender" class="block w-full rounded-lg border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200 sm:text-sm py-3 pl-11 pr-4" :class="errors.gender ? 'border-red-300' : 'border-gray-200'">
+                <option value="" disabled selected>Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+             </select>
+          </div>
+          <p v-if="errors.gender" class="mt-1.5 text-sm text-red-600">{{ errors.gender }}</p>
+        </div>
 
         <BaseInput 
           v-model="password"
