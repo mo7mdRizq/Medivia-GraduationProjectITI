@@ -1,7 +1,9 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
-// Shared appointments state
-export const appointments = ref([
+const STORAGE_KEY = 'medivia_appointments'
+
+// Default initial data
+const defaultAppointments = [
     {
         id: 1,
         type: 'Follow-up Consultation',
@@ -134,7 +136,21 @@ export const appointments = ref([
         notes: 'Initial consultation for hypertension.',
         category: 'past'
     }
-])
+]
+
+// Load from localStorage or use default
+const getStoredAppointments = () => {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : defaultAppointments
+}
+
+// Shared appointments state
+export const appointments = ref(getStoredAppointments())
+
+// Watch for changes and save to localStorage
+watch(appointments, (newVal) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+}, { deep: true })
 
 // Helper function to add a new appointment
 export const addAppointment = (newAppointment) => {
