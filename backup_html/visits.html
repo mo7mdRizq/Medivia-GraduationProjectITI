@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthPortal - Visits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Unregister any service workers that might be causing CORS issues
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com" onload="configureTailwind()"></script>
+  <script>
+    function configureTailwind() {
+      if (typeof tailwind !== 'undefined') {
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                brand: {
+                  blue: '#1C7ED6',
+                  dark: '#0C4A6E',
+                  teal: '#14b8a6'
+                },
+                neutral: {
+                  50: '#F8FAFC',
+                  100: '#F1F5F9'
+                }
+              },
+              fontFamily: {
+                sans: ['Inter', 'system-ui', 'sans-serif']
+              },
+              boxShadow: {
+                card: '0 14px 45px rgba(17, 24, 39, 0.08)'
+              }
+            }
+          }
+        };
+      }
+    }
+    window.addEventListener('load', function() {
+      setTimeout(configureTailwind, 100);
+    });
+  </script>
+  <style>
+    body { font-feature-settings: "cv02","cv03","cv04","cv11"; }
+  </style>
+</head>
+<body class="bg-neutral-50 text-slate-900 antialiased">
+  <div id="app" class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-slate-100 text-slate-700 border-r border-slate-200">
+      <div class="flex h-full flex-col">
+        <!-- Logo -->
+        <div class="flex items-center space-x-2 border-b border-slate-200 px-6 py-5">
+          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-lg">HP</div>
+          <span class="text-lg font-semibold text-slate-900">HealthPortal</span>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 space-y-1 px-4 py-4">
+          <a href="patient-dashboard.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Dashboard</span>
+          </a>
+
+          <a href="patient-history.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Medical History</span>
+          </a>
+
+          <a href="prescriptions.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+            <span>Prescriptions</span>
+          </a>
+
+          <a href="lab-results.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Lab Results</span>
+          </a>
+
+          <a href="appointments.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Appointments</span>
+          </a>
+
+          <a href="visits.html" class="nav-item nav-item-active">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Visits</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Profile Settings</span>
+          </a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 pl-64">
+      <main class="px-8 py-8">
+        <!-- Header -->
+        <div class="mb-6">
+          <h1 class="text-3xl font-bold text-slate-900 mb-2">Visits</h1>
+          <p class="text-slate-600">Complete record of all your medical visits and examinations</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative mb-4">
+          <input type="text" 
+                 placeholder="Search by doctor, diagnosis, treatment, or visit type..." 
+                 class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pl-12 text-sm outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
+          <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-3.5 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+          </svg>
+        </div>
+
+        <!-- Filter Options -->
+        <div class="flex gap-3 mb-6">
+          <button class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Date Range
+          </button>
+          <button class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+            Specialty
+          </button>
+          <button class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filter
+          </button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div class="bg-white rounded-xl p-6 shadow-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-600 mb-1">Total Visits</p>
+                <p class="text-3xl font-bold text-slate-900">6</p>
+              </div>
+              <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-600 mb-1">Recent (3 months)</p>
+                <p class="text-3xl font-bold text-slate-900">3</p>
+              </div>
+              <div class="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-slate-600 mb-1">Healthcare Providers</p>
+                <p class="text-3xl font-bold text-slate-900">4</p>
+              </div>
+              <div class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Count -->
+        <div class="mb-4">
+          <p class="text-sm text-slate-600">Showing {{ visits.length }} of {{ visits.length }} visits</p>
+        </div>
+
+        <!-- Visits List -->
+        <div class="space-y-4">
+          <div v-for="visit in visits" 
+               :key="visit.id" 
+               class="bg-white border border-slate-200 rounded-xl shadow-card overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 cursor-pointer hover:bg-slate-50 transition-colors" @click="toggleVisit(visit.id)">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="text-lg font-bold text-slate-900 mb-1">{{ visit.type }}</h3>
+                      <div class="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                        <span>{{ visit.date }} • {{ visit.time }}</span>
+                        <span>•</span>
+                        <span class="font-semibold text-slate-900">{{ visit.doctor }}</span>
+                        <span class="text-slate-500">• {{ visit.specialty }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="ml-13">
+                    <p class="text-sm text-slate-700 mb-1"><span class="font-semibold">Chief Complaint:</span> {{ visit.chiefComplaint }}</p>
+                    <p class="text-sm text-slate-700"><span class="font-semibold">Diagnosis:</span> {{ visit.diagnosis }}</p>
+                  </div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                     :class="visit.expanded ? 'rotate-180' : ''"
+                     class="h-5 w-5 text-slate-400 transition-transform ml-4" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Expanded Details -->
+            <div v-if="visit.expanded" class="px-6 pb-6 border-t border-slate-200 pt-6">
+              <!-- Vital Signs -->
+              <div v-if="visit.vitalSigns" class="mb-6">
+                <h4 class="text-sm font-semibold text-slate-700 mb-3">Vital Signs</h4>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div v-for="(value, key) in visit.vitalSigns" :key="key" class="bg-slate-50 rounded-lg p-3">
+                    <p class="text-xs text-slate-500 mb-1">{{ key }}</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ value }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Clinical Notes -->
+              <div v-if="visit.clinicalNotes" class="mb-6">
+                <h4 class="text-sm font-semibold text-slate-700 mb-3">Clinical Notes</h4>
+                <p class="text-sm text-slate-700 bg-slate-50 rounded-lg p-4">{{ visit.clinicalNotes }}</p>
+              </div>
+
+              <!-- Prescriptions Issued -->
+              <div v-if="visit.prescriptions && visit.prescriptions.length > 0" class="mb-6">
+                <h4 class="text-sm font-semibold text-slate-700 mb-3">Prescriptions Issued</h4>
+                <ul class="space-y-2">
+                  <li v-for="(prescription, index) in visit.prescriptions" :key="index" class="text-sm text-slate-700 flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-brand-teal"></span>
+                    {{ prescription }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Laboratory Tests Ordered -->
+              <div v-if="visit.labTests && visit.labTests.length > 0" class="mb-6">
+                <h4 class="text-sm font-semibold text-slate-700 mb-3">Laboratory Tests Ordered</h4>
+                <ul class="space-y-2">
+                  <li v-for="(test, index) in visit.labTests" :key="index" class="text-sm text-slate-700 flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                    {{ test }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Follow-up Plan -->
+              <div v-if="visit.followUpPlan" class="mb-6">
+                <h4 class="text-sm font-semibold text-slate-700 mb-3">Follow-up Plan</h4>
+                <p class="text-sm text-slate-700 bg-blue-50 rounded-lg p-4">{{ visit.followUpPlan }}</p>
+              </div>
+
+              <!-- Attached Files -->
+              <div v-if="visit.attachedFiles && visit.attachedFiles.length > 0" class="mb-6">
+                <h4 class="text-sm font-semibold text-slate-700 mb-3">Attached Files</h4>
+                <div class="space-y-2">
+                  <div v-for="(file, index) in visit.attachedFiles" :key="index" class="flex items-center justify-between bg-slate-50 rounded-lg p-3">
+                    <div class="flex items-center gap-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <div>
+                        <p class="text-sm font-medium text-slate-900">{{ file.name }}</p>
+                        <p class="text-xs text-slate-500">{{ file.size }}</p>
+                      </div>
+                    </div>
+                    <button class="text-brand-teal hover:text-teal-700">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Download Button -->
+              <button class="w-full flex items-center justify-center gap-2 rounded-lg bg-brand-teal px-4 py-3 text-sm font-semibold text-white hover:bg-teal-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Complete Visit Summary
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    const app = {
+      data() {
+        return {
+          visits: [
+            {
+              id: 1,
+              type: 'Annual Physical Exam',
+              date: 'Nov 28, 2025',
+              time: '9:00 AM',
+              doctor: 'Dr. Michael Chen',
+              specialty: 'Primary Care',
+              chiefComplaint: 'Routine annual health examination',
+              diagnosis: 'Patient in excellent health. All vital signs within normal limits. No acute concerns identified.',
+              expanded: true
+            },
+            {
+              id: 2,
+              type: 'Follow-up Consultation',
+              date: 'Oct 15, 2025',
+              time: '10:30 AM',
+              doctor: 'Dr. Sarah Johnson',
+              specialty: 'Cardiology',
+              chiefComplaint: 'Hypertension management follow-up',
+              diagnosis: 'Stage 1 Hypertension - Well controlled on current medication regimen. Blood pressure readings consistently within target range.',
+              vitalSigns: {
+                'Blood Pressure': '118/78 mmHg',
+                'Heart Rate': '68 bpm',
+                'Temperature': '98.4°F',
+                'Weight': '174 lbs',
+                'Height': "5'10\""
+              },
+              clinicalNotes: 'Patient reports excellent medication compliance. Home blood pressure monitoring shows consistent readings in normal range. No adverse medication effects reported. EKG shows normal sinus rhythm with no abnormalities. Continue current medication regimen. Patient educated on importance of sodium restriction and regular cardiovascular exercise.',
+              prescriptions: [
+                'Lisinopril 10mg daily (continued)',
+                'Aspirin 81mg daily (continued)'
+              ],
+              labTests: [
+                'Comprehensive Metabolic Panel',
+                'Lipid Panel'
+              ],
+              followUpPlan: 'Cardiology follow-up in 3 months',
+              attachedFiles: [
+                { name: 'Cardiology_Visit_Notes.pdf', size: '312 KB' },
+                { name: 'BP_Monitoring_Chart.pdf', size: '203 KB' },
+                { name: 'EKG_Results.pdf', size: '180 KB' }
+              ],
+              expanded: true
+            },
+            {
+              id: 3,
+              type: 'Consultation',
+              date: 'Sep 8, 2025',
+              time: '11:00 AM',
+              doctor: 'Dr. Emily Rodriguez',
+              specialty: 'Dermatology',
+              chiefComplaint: 'Skin lesion evaluation on left shoulder',
+              diagnosis: 'Benign nevus - No concerning features on visual examination and dermoscopy. No evidence of dysplasia or malignancy.',
+              expanded: false
+            },
+            {
+              id: 4,
+              type: 'Sick Visit',
+              date: 'Jul 22, 2025',
+              time: '2:15 PM',
+              doctor: 'Dr. Michael Chen',
+              specialty: 'Primary Care',
+              chiefComplaint: 'Cough, congestion, and mild fatigue for 3 days',
+              diagnosis: 'Acute Upper Respiratory Infection (Common Cold) - Viral etiology suspected. No indication for antibiotic therapy.',
+              expanded: false
+            },
+            {
+              id: 5,
+              type: 'Initial Consultation',
+              date: 'May 10, 2025',
+              time: '9:30 AM',
+              doctor: 'Dr. James Park',
+              specialty: 'Orthopedics',
+              chiefComplaint: 'Right knee pain for 2 weeks, worse with activity',
+              diagnosis: "Patellar tendinopathy (Jumper's Knee) - Mild to moderate severity. Likely related to recent increase in running mileage.",
+              expanded: false
+            },
+            {
+              id: 6,
+              type: 'Initial Consultation',
+              date: 'Mar 3, 2025',
+              time: '1:45 PM',
+              doctor: 'Dr. Sarah Johnson',
+              specialty: 'Cardiology',
+              chiefComplaint: 'Elevated blood pressure readings at home',
+              diagnosis: 'Stage 1 Hypertension - Newly diagnosed. No evidence of end-organ damage. Recommended lifestyle modifications and pharmacological therapy.',
+              expanded: false
+            }
+          ]
+        };
+      },
+      methods: {
+        toggleVisit(id) {
+          const visit = this.visits.find(v => v.id === id);
+          if (visit) {
+            visit.expanded = !visit.expanded;
+          }
+        }
+      }
+    };
+    Vue.createApp(app).mount('#app');
+  </script>
+
+  <style>
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      color: #4b5563;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .nav-item:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #111827;
+    }
+    .nav-item-active {
+      background-color: rgba(59, 130, 246, 0.12);
+      color: #3b82f6;
+    }
+    .nav-item-active svg {
+      color: #3b82f6;
+    }
+  </style>
+</body>
+</html>
+
+

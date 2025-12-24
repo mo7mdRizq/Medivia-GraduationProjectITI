@@ -20,4 +20,5 @@ import { RouterView } from 'vue-router'
 .fade-leave-to {
   opacity: 0;
 }
+/* Global styles if needed, mostly handled by Tailwind */
 </style>

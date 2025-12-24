@@ -43,7 +43,7 @@ const router = createRouter({
         {
             path: '/admin',
             component: () => import('../layouts/AdminLayout.vue'),
-            meta: { requiresAuth: true }, // Placeholder for auth guard
+            meta: { requiresAuth: true },
             children: [
                 {
                     path: 'dashboard',
@@ -63,7 +63,6 @@ const router = createRouter({
                     component: () => import('../views/admin/AdminAppointmentsView.vue'),
                     meta: { title: 'Appointments Manager - Medivia Admin' }
                 },
-                // Hidden settings route if needed later, or removed for now as per mockup
                 {
                     path: 'settings',
                     name: 'admin-settings',
@@ -75,9 +74,58 @@ const router = createRouter({
                     redirect: { name: 'admin-dashboard' }
                 }
             ]
+        },
+        // Patient Dashboard Routes
+        {
+            path: '/dashboard',
+            component: () => import('../layouts/DashboardLayout.vue'),
+            meta: { requiresAuth: true },
+            children: [
+                {
+                    path: '',
+                    name: 'dashboard',
+                    component: () => import('../views/Dashboard.vue'),
+                    meta: { title: 'My Dashboard - Medivia' }
+                },
+                {
+                    path: 'history',
+                    name: 'history',
+                    component: () => import('../views/MedicalHistory.vue'),
+                    meta: { title: 'Medical History - Medivia' }
+                },
+                {
+                    path: 'prescriptions',
+                    name: 'prescriptions',
+                    component: () => import('../views/Prescriptions.vue'),
+                    meta: { title: 'Prescriptions - Medivia' }
+                },
+                {
+                    path: 'lab-results',
+                    name: 'lab-results',
+                    component: () => import('../views/LabResults.vue'),
+                    meta: { title: 'Lab Results - Medivia' }
+                },
+                {
+                    path: 'appointments',
+                    name: 'appointments',
+                    component: () => import('../views/Appointments.vue'),
+                    meta: { title: 'My Appointments - Medivia' }
+                },
+                {
+                    path: 'visits',
+                    name: 'visits',
+                    component: () => import('../views/Visits.vue'),
+                    meta: { title: 'My Visits - Medivia' }
+                },
+                {
+                    path: 'profile',
+                    name: 'profile',
+                    component: () => import('../views/ProfileSettings.vue'),
+                    meta: { title: 'Profile Settings - Medivia' }
+                }
+            ]
         }
     ]
-
 })
 
 router.beforeEach((to, from, next) => {
@@ -89,7 +137,7 @@ router.beforeEach((to, from, next) => {
     const publicRoutes = ['landing', 'login', 'register', 'forgot-password', 'reset-password']
 
     // If route requires auth and user is not authenticated, redirect to login
-    if (!publicRoutes.includes(to.name) && !isAuthenticated) {
+    if (!publicRoutes.includes(to.name) && !isAuthenticated && to.meta.requiresAuth) {
         next({ name: 'login' })
     } else {
         next()
