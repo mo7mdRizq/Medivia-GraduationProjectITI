@@ -124,7 +124,33 @@ const router = createRouter({
                     meta: { title: 'Profile Settings - Medivia' }
                 }
             ]
-        }
+        },
+        // Doctor Routes (from edit-doctor branch)
+        {
+            path: '/patients',
+            name: 'patients',
+            component: () => import('../views/PatientsView.vue'),
+        },
+        {
+            path: '/visits',
+            name: 'visits',
+            component: () => import('../views/VisitsView.vue'),
+        },
+        {
+            path: '/prescriptions',
+            name: 'doctor-prescriptions',
+            component: () => import('../views/PrescriptionsView.vue'),
+        },
+        {
+            path: '/appointments',
+            name: 'doctor-appointments',
+            component: () => import('../views/AppointmentsView.vue'),
+        },
+        {
+            path: '/profile',
+            name: 'doctor-profile',
+            component: () => import('../views/ProfileSettingsView.vue'),
+        },
     ]
 })
 

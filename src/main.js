@@ -10,6 +10,7 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+<<<<<<< HEAD
 app.use(Vue3Toastify, {
     autoClose: 3000,
     position: toast.POSITION.TOP_RIGHT,
