@@ -29,10 +29,10 @@ const handleLogout = () => {
 }
 
 const navigation = [
-  { name: 'Home', href: '#' },
-  { name: 'Dashboard', href: '#' },
-  { name: 'Appointment', href: '#' },
-  { name: 'Visits', href: '#' },
+  { name: 'Home', href: '/' },
+  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Appointment', href: '/dashboard/appointments' },
+  { name: 'Visits', href: '/dashboard/visits' },
   { name: 'About', href: '#' },
 ]
 </script>
@@ -50,12 +50,13 @@ const navigation = [
 
         <!-- Desktop Nav -->
         <div class="hidden md:flex items-center space-x-8">
-          <a v-for="item in navigation" :key="item.name" :href="item.href" 
+          <RouterLink v-for="item in navigation" :key="item.name" :to="item.href" 
              class="text-sm font-medium transition-colors relative py-1"
-             :class="item.name === 'Home' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500 hover:text-gray-900'"
+             active-class="text-gray-900 border-b-2 border-gray-900"
+             :class="'text-gray-500 hover:text-gray-900'"
           >
             {{ item.name }}
-          </a>
+          </RouterLink>
         </div>
 
         <!-- Actions -->
@@ -97,16 +98,16 @@ const navigation = [
     >
       <div v-if="isMobileMenuOpen" class="md:hidden border-t border-gray-100 bg-white shadow-lg">
         <div class="px-4 pt-2 pb-4 space-y-1">
-          <a 
+          <RouterLink 
             v-for="item in navigation" 
             :key="item.name" 
-            :href="item.href"
+            :to="item.href"
             @click="isMobileMenuOpen = false"
-            class="block px-3 py-2 rounded-md text-base font-medium transition-colors"
-            :class="item.name === 'Home' ? 'text-brand-600 bg-brand-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'"
+            class="block px-3 py-2 rounded-md text-base font-medium transition-colors text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            active-class="text-brand-600 bg-brand-50"
           >
             {{ item.name }}
-          </a>
+          </RouterLink>
           
           <div class="pt-4 border-t border-gray-100">
             <div v-if="!isLoggedIn">
