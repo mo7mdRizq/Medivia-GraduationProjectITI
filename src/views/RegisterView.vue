@@ -28,11 +28,19 @@ const validate = () => {
     errors.value.fullName = 'Full Name must contain letters only'
   }
 
-  // Email: Strict validation
+  // Email: Strict validation (Must contain Name AND Numbers before @, and end in .com)
+  // Regex Explanation:
+  // ^(?=.*[A-Za-z])(?=.*\d)  -> Lookahead ensures at least one letter and one digit exist
+  // [A-Za-z\d]+              -> The local part consists of letters and digits
+  // @                        -> Literal @
+  // [a-zA-Z]+                -> Domain name (letters)
+  // \.com$                   -> Must end in .com
+  const emailRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+@[a-zA-Z]+\.com$/
+  
   if (!email.value) {
     errors.value.email = 'Email address is required'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = 'Please enter a valid email address'
+  } else if (!emailRegex.test(email.value)) {
+    errors.value.email = 'Email must contain letters AND numbers before @, and end in .com (e.g., user123@gmail.com)'
   }
 
   // Password: Must have uppercase, lowercase, number, symbol, min 8 chars
