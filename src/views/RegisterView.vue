@@ -15,6 +15,7 @@ const email = ref('')
 const phone = ref('')
 const dob = ref('')
 const gender = ref('')
+const role = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
@@ -47,6 +48,10 @@ const validate = () => {
 
   if (!gender.value) {
     errors.value.gender = 'Gender is required'
+  }
+
+  if (!role.value) {
+    errors.value.role = 'Account Type is required'
   }
 
   if (!password.value) {
@@ -92,7 +97,9 @@ const handleRegister = () => {
       email: email.value,
       phone: phone.value,
       dob: dob.value,
+      dob: dob.value,
       gender: gender.value,
+      role: role.value,
       password: password.value
     })
     localStorage.setItem('registeredUsers', JSON.stringify(users))
@@ -211,6 +218,21 @@ const handleRegister = () => {
             </button>
           </template>
         </BaseInput>
+
+        <div class="mb-5">
+          <label class="block text-sm font-semibold text-gray-800 mb-2">Role</label>
+          <div class="relative">
+             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <UserIcon class="h-5 w-5" />
+             </div>
+             <select v-model="role" class="block w-full rounded-lg border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200 sm:text-sm py-3 pl-11 pr-4" :class="errors.role ? 'border-red-300' : 'border-gray-200'">
+                <option value="" disabled selected>Select Account Type</option>
+                <option value="patient">Patient</option>
+                <option value="doctor">Doctor</option>
+             </select>
+          </div>
+          <p v-if="errors.role" class="mt-1.5 text-sm text-red-600">{{ errors.role }}</p>
+        </div>
 
         <BaseButton block type="submit">Create Account</BaseButton>
       </form>

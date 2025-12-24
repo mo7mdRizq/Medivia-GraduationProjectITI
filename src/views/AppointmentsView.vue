@@ -47,7 +47,7 @@
         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">appointments</h3>
 
         <!-- Appointments List -->
-        <div class="space-y-4">
+        <div v-if="filteredAppointments.length > 0" class="space-y-4">
             <div v-for="appt in filteredAppointments" :key="appt.id" 
                  class="bg-white rounded-xl border shadow-sm overflow-hidden appointment-card transition-all"
                  :class="[
@@ -56,7 +56,7 @@
                     'border-green-100'
                  ]"
             >
-                <!-- Header / Trigger -->
+                <!-- ... existing card content ... -->
                 <div @click="toggleAppointment(appt.id)"
                     class="p-4 flex items-center justify-between cursor-pointer hover:bg-opacity-80 transition-colors visit-header"
                      :class="[
@@ -230,13 +230,26 @@
                             </svg>
                             Reschedule
                         </button>
-                        <button class="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 py-2 rounded-lg font-medium text-sm transition">
+                        <button @click="$router.push({ name: 'patient-details', params: { id: appt.patientId || 1 } })"
+                            class="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 py-2 rounded-lg font-medium text-sm transition">
                             View Patient Profile
                         </button>
                     </div>
 
                 </div>
             </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else class="text-center py-12 bg-white rounded-xl border border-gray-100 shadow-sm border-dashed">
+            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">No appointments found</h3>
+            <p class="text-gray-500 mt-1 max-w-sm mx-auto">Try adjusting your filters.</p>
+            <button class="mt-4 text-blue-600 font-medium text-sm hover:underline" @click="searchQuery = ''">Clear Filters</button>
         </div>
 
         <!-- Reschedule Modal -->
@@ -309,8 +322,15 @@ const newDate = ref('');
 const newTime = ref('');
 const rescheduleReason = ref('');
 
-const appointments = ref([]);
+import { appointments, upcomingCount, pendingCount, pastCount, totalAppointments } from '../stores/appointmentsStore';
 
+// We want to use the shared state, but keeping `appointments` name for compatibility with existing template
+// Since `appointments` is already a ref in the store, we can use it directly.
+// However, the template expects `appointments` to be available.
+// The imports above are `ref`s so they can be used in script setup directly.
+
+
+// Use store computed values or derive local ones if needing specific logic
 const todaysAppointmentsCount = computed(() => {
     // Assuming Dec 8, 2025 is "Today" for this mock data context
     return appointments.value.filter(a => a.date === 'Dec 8, 2025').length;

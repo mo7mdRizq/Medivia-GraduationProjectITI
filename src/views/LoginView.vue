@@ -71,8 +71,10 @@ const handleLogin = () => {
     }
     
     // Store auth state for User
+    // Store auth state for User
     localStorage.setItem('isAuthenticated', 'true')
-    localStorage.setItem('userRole', 'user') // added for consistency
+    const role = user.role || 'patient'
+    localStorage.setItem('userRole', role)
     localStorage.setItem('userEmail', email.value)
     localStorage.setItem('userName', user.fullName)
     
@@ -82,7 +84,11 @@ const handleLogin = () => {
     
     // Slight delay to see the toast before redirect
     setTimeout(() => {
-        router.push('/')
+        if (role === 'doctor') {
+            router.push('/doctor-dashboard')
+        } else {
+            router.push('/dashboard')
+        }
     }, 500)
   }
 }

@@ -6,7 +6,7 @@
                 <h2 class="text-2xl font-bold text-gray-900">Prescriptions Management</h2>
                 <p class="text-gray-500 mt-1">Create and manage patient prescriptions</p>
             </div>
-            <button
+            <button @click="openPrescriptionModal"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow-sm transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -183,13 +183,204 @@
                 </div>
             </div>
         </div>
+
+
+    <!-- New Prescription Modal -->
+    <div v-if="showPrescriptionModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm" @click.self="closePrescriptionModal">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-900">New Prescription</h3>
+                <button @click="closePrescriptionModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <form @submit.prevent="submitPrescription" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Patient Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Patient Name</label>
+                            <input v-model="newPrescription.patientName" type="text" required
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                placeholder="e.g. John Doe">
+                        </div>
+
+                        <!-- Patient Age -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Patient Age</label>
+                            <input v-model="newPrescription.patientAge" type="number" required
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                placeholder="e.g. 45">
+                        </div>
+                    </div>
+
+                    <!-- Diagnosis -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Diagnosis</label>
+                        <input v-model="newPrescription.diagnosis" type="text" required
+                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                            placeholder="e.g. Hypertension">
+                    </div>
+
+                    <!-- Medications List -->
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block text-sm font-medium text-gray-700">Medications</label>
+                            <button type="button" @click="addMedication" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium transition-colors border border-blue-100">
+                                + Add Medication
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div v-for="(med, index) in newPrescription.medications" :key="index" class="bg-gray-50 p-4 rounded-xl border border-gray-200 relative">
+                                <button v-if="newPrescription.medications.length > 1" type="button" @click="removeMedication(index)" class="absolute top-2 right-2 text-red-400 hover:text-red-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Drug Name</label>
+                                        <input v-model="med.name" type="text" required placeholder="e.g. Amoxicillin"
+                                            class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Dosage</label>
+                                        <input v-model="med.dosage" type="text" required placeholder="e.g. 500mg"
+                                            class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Frequency</label>
+                                        <input v-model="med.frequency" type="text" required placeholder="e.g. Twice daily"
+                                            class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Duration</label>
+                                        <input v-model="med.duration" type="text" required placeholder="e.g. 7 days"
+                                            class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Instructions</label>
+                                    <input v-model="med.instructions" type="text" placeholder="e.g. Take with food"
+                                        class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Expiration -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Expiration Date</label>
+                            <input v-model="newPrescription.dateExpires" type="date" required
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all">
+                        </div>
+
+                        <!-- Refills -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Refills</label>
+                            <input v-model="newPrescription.refills" type="number" min="0" required
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Pharmacy Notes -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pharmacy Notes</label>
+                        <textarea v-model="newPrescription.pharmacyNotes" rows="2"
+                            class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                            placeholder="Any special instructions for the pharmacist..."></textarea>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" @click="closePrescriptionModal"
+                            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 font-medium rounded-lg text-sm transition-colors shadow-sm">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm transition-colors shadow-sm flex items-center">
+                            Issue Prescription
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 
 const searchQuery = ref('');
+const showPrescriptionModal = ref(false);
+
+const newPrescription = reactive({
+    patientName: '',
+    patientAge: '',
+    diagnosis: '',
+    dateExpires: '',
+    refills: 0,
+    pharmacyNotes: '',
+    medications: [
+        { name: '', dosage: '', frequency: '', duration: '', instructions: '' }
+    ]
+});
+
+const openPrescriptionModal = () => {
+    // Reset form
+    Object.assign(newPrescription, {
+        patientName: '',
+        patientAge: '',
+        diagnosis: '',
+        dateExpires: '',
+        refills: 0,
+        pharmacyNotes: '',
+        medications: [
+            { name: '', dosage: '', frequency: '', duration: '', instructions: '' }
+        ]
+    });
+    showPrescriptionModal.value = true;
+};
+
+const closePrescriptionModal = () => {
+    showPrescriptionModal.value = false;
+};
+
+const addMedication = () => {
+    newPrescription.medications.push({ name: '', dosage: '', frequency: '', duration: '', instructions: '' });
+};
+
+const removeMedication = (index) => {
+    newPrescription.medications.splice(index, 1);
+};
+
+const submitPrescription = () => {
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const expires = new Date(newPrescription.dateExpires).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    const p = {
+        id: prescriptions.value.length + 1,
+        patientName: newPrescription.patientName,
+        patientAge: newPrescription.patientAge,
+        status: 'Active',
+        dateIssued: today,
+        dateExpires: expires,
+        diagnosis: newPrescription.diagnosis,
+        refills: newPrescription.refills,
+        expanded: false,
+        pharmacyNotes: newPrescription.pharmacyNotes || 'None',
+        medications: JSON.parse(JSON.stringify(newPrescription.medications)) // deep copy
+    };
+
+    prescriptions.value.unshift(p);
+    closePrescriptionModal();
+};
 
 const prescriptions = ref([
     {

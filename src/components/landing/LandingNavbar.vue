@@ -29,11 +29,9 @@ const handleLogout = () => {
 }
 
 const navigation = [
-  { name: 'Home', href: '#' },
-  { name: 'Dashboard', href: '#' },
-  { name: 'Appointment', href: '#' },
-  { name: 'Visits', href: '#' },
-  { name: 'About', href: '#' },
+  { name: 'Features', href: '#features' },
+  { name: 'How it Works', href: '#how-it-works' },
+  { name: 'Reviews', href: '#testimonials' },
 ]
 </script>
 
