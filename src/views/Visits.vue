@@ -3,99 +3,28 @@ import { ref, computed } from 'vue'
 import AddVisitModal from '../components/AddVisitModal.vue'
 import Swal from 'sweetalert2'
 import { generatePDF } from '../utils/pdfGenerator'
+import { 
+  visits, 
+  totalVisits, 
+  recentVisitsCount, 
+  uniqueProvidersCount, 
+  addVisit 
+} from '../stores/visitsStore'
 
 const showModal = ref(false)
+const query = ref('')
 
-const visits = ref([
-  {
-    id: 1,
-    type: 'Annual Physical Exam',
-    date: 'Nov 28, 2025',
-    time: '9:00 AM',
-    doctor: 'Dr. Michael Chen',
-    specialty: 'Primary Care',
-    chiefComplaint: 'Routine annual health examination',
-    diagnosis: 'Patient in excellent health. All vital signs within normal limits. No acute concerns identified.',
-    expanded: true
-  },
-  {
-    id: 2,
-    type: 'Follow-up Consultation',
-    date: 'Oct 15, 2025',
-    time: '10:30 AM',
-    doctor: 'Dr. Sarah Johnson',
-    specialty: 'Cardiology',
-    chiefComplaint: 'Hypertension management follow-up',
-    diagnosis: 'Stage 1 Hypertension - Well controlled on current medication regimen. Blood pressure readings consistently within target range.',
-    vitalSigns: [
-      { label: 'Blood Pressure', value: '118/70 mmHg', color: 'blue' },
-      { label: 'Heart Rate', value: '68 bpm', color: 'green' },
-      { label: 'Temperature', value: '98.4°F', color: 'teal' },
-      { label: 'Weight', value: '174 lbs', color: 'indigo' },
-      { label: 'Height', value: "5'10\"", color: 'purple' }
-    ],
-    clinicalNotes: 'Patient reports excellent medication compliance. Home blood pressure monitoring shows consistent readings in normal range. No adverse medication effects reported. EKG shows normal sinus rhythm with no abnormalities. Continue current medication regimen. Patient educated on importance of sodium restriction and regular cardiovascular exercise.',
-    prescriptions: [
-      'Lisinopril 10mg daily (continued)',
-      'Aspirin 81mg daily (continued)'
-    ],
-    labTests: [
-      'Comprehensive Metabolic Panel',
-      'Lipid Panel'
-    ],
-    followUpPlan: 'Cardiology follow-up in 3 months',
-    attachedFiles: [
-      { name: 'Cardiology_Visit_Notes.pdf', size: '312 KB' },
-      { name: 'BP_Monitoring_Chart.pdf', size: '203 KB' },
-      { name: 'EKG_Results.pdf', size: '180 KB' }
-    ],
-    expanded: true
-  },
-  {
-    id: 3,
-    type: 'Consultation',
-    date: 'Sep 8, 2025',
-    time: '11:00 AM',
-    doctor: 'Dr. Emily Rodriguez',
-    specialty: 'Dermatology',
-    chiefComplaint: 'Skin lesion evaluation on left shoulder',
-    diagnosis: 'Benign nevus - No concerning features on visual examination and dermoscopy. No evidence of dysplasia or malignancy.',
-    expanded: false
-  },
-  {
-    id: 4,
-    type: 'Sick Visit',
-    date: 'Jul 22, 2025',
-    time: '2:15 PM',
-    doctor: 'Dr. Michael Chen',
-    specialty: 'Primary Care',
-    chiefComplaint: 'Cough, congestion, and mild fatigue for 3 days',
-    diagnosis: 'Acute Upper Respiratory Infection (Common Cold) - Viral etiology suspected. No indication for antibiotic therapy.',
-    expanded: false
-  },
-  {
-    id: 5,
-    type: 'Initial Consultation',
-    date: 'May 10, 2025',
-    time: '9:30 AM',
-    doctor: 'Dr. James Park',
-    specialty: 'Orthopedics',
-    chiefComplaint: 'Right knee pain for 2 weeks, worse with activity',
-    diagnosis: "Patellar tendinopathy (Jumper's Knee) - Mild to moderate severity. Likely related to recent increase in running mileage.",
-    expanded: false
-  },
-  {
-    id: 6,
-    type: 'Initial Consultation',
-    date: 'Mar 3, 2025',
-    time: '1:45 PM',
-    doctor: 'Dr. Sarah Johnson',
-    specialty: 'Cardiology',
-    chiefComplaint: 'Elevated blood pressure readings at home',
-    diagnosis: 'Stage 1 Hypertension - Newly diagnosed. No evidence of end-organ damage. Recommended lifestyle modifications and pharmacological therapy.',
-    expanded: false
-  }
-])
+const filteredVisits = computed(() => {
+  const q = query.value.toLowerCase()
+  if (!q) return visits.value
+  return visits.value.filter(v => 
+    (v.doctor && v.doctor.toLowerCase().includes(q)) ||
+    (v.diagnosis && v.diagnosis.toLowerCase().includes(q)) ||
+    (v.chiefComplaint && v.chiefComplaint.toLowerCase().includes(q)) ||
+    (v.type && v.type.toLowerCase().includes(q)) ||
+    (v.specialty && v.specialty.toLowerCase().includes(q))
+  )
+})
 
 const toggleVisit = (id) => {
   const visit = visits.value.find(v => v.id === id)
@@ -104,27 +33,13 @@ const toggleVisit = (id) => {
   }
 }
 
-/* Computed Properties for Dynamic Counts */
-const totalVisits = computed(() => visits.value.length)
-
-const recentVisitsCount = computed(() => {
-  const threeMonthsAgo = new Date()
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
-  return visits.value.filter(v => new Date(v.date) >= threeMonthsAgo).length
-})
-
-const uniqueProvidersCount = computed(() => {
-  const providers = new Set(visits.value.map(v => v.doctor))
-  return providers.size
-})
-
 const handleAddVisit = (newVisit) => {
-  visits.value.unshift(newVisit)
+  addVisit(newVisit)
   Swal.fire({
     title: 'Visit Logged!',
     text: 'New past visit has been added to your history.',
     icon: 'success',
-    confirmButtonColor: '#0d9488'
+    confirmButtonColor: '#5A4FF3'
   })
 }
 
@@ -182,7 +97,7 @@ const downloadVisitSummary = (visit) => {
         <h1 class="text-3xl font-bold text-slate-900 mb-2">Visits</h1>
         <p class="text-slate-600">Complete record of all your medical visits and examinations</p>
       </div>
-      <button @click="showModal = true" class="flex items-center justify-center gap-2 rounded-lg bg-teal-600 px-6 py-2.5 text-white font-semibold hover:bg-teal-700 transition-colors shadow-sm">
+      <button @click="showModal = true" class="flex items-center justify-center gap-2 rounded-xl bg-[#5A4FF3] px-6 py-3 text-white font-bold hover:bg-[#4F46E5] transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -193,8 +108,9 @@ const downloadVisitSummary = (visit) => {
     <!-- Search Bar -->
     <div class="relative mb-6">
       <input type="text" 
+             v-model="query"
              placeholder="Search by doctor, diagnosis, treatment, or visit type..." 
-             class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pl-12 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+             class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pl-12 text-sm outline-none focus:border-[#5A4FF3] focus:ring-4 focus:ring-indigo-100/50 transition-all">
       <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-3.5 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
       </svg>
@@ -218,12 +134,12 @@ const downloadVisitSummary = (visit) => {
 
     <!-- Showing Count -->
     <div class="mb-4">
-      <p class="text-sm text-slate-500">Showing {{ visits.length }} of {{ totalVisits }} visits</p>
+      <p class="text-sm text-slate-500">Showing {{ filteredVisits.length }} of {{ totalVisits }} visits</p>
     </div>
 
     <!-- Visits List -->
     <div class="space-y-4">
-      <div v-for="visit in visits" 
+      <div v-for="visit in filteredVisits" 
            :key="visit.id" 
            class="bg-white border border-slate-200 rounded-xl overflow-hidden transition-all duration-200"
            :class="visit.expanded ? 'shadow-md ring-1 ring-slate-200' : 'hover:shadow-sm'">
@@ -234,7 +150,7 @@ const downloadVisitSummary = (visit) => {
             <div class="flex-1 min-w-0"> <!-- min-w-0 allows truncate to work inside flex -->
               <div class="flex items-start gap-3 mb-2">
                 <div class="h-10 w-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0 border border-teal-100 mt-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#5A4FF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                   </svg>
                 </div>
@@ -417,7 +333,7 @@ const downloadVisitSummary = (visit) => {
 
            <!-- Download Button -->
            <div class="mt-8">
-              <button @click="downloadVisitSummary(visit)" class="w-full bg-teal-600 text-white rounded-xl py-3 text-sm font-semibold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2">
+              <button @click="downloadVisitSummary(visit)" class="w-full bg-[#5A4FF3] text-white rounded-xl py-4 text-sm font-bold hover:bg-[#4F46E5] transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 active:scale-95">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                  </svg>

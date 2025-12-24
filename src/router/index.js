@@ -89,37 +89,37 @@ const router = createRouter({
                 },
                 {
                     path: 'history',
-                    name: 'history',
+                    name: 'patient-history',
                     component: () => import('../views/MedicalHistory.vue'),
                     meta: { title: 'Medical History - Medivia' }
                 },
                 {
                     path: 'prescriptions',
-                    name: 'prescriptions',
+                    name: 'patient-prescriptions',
                     component: () => import('../views/Prescriptions.vue'),
                     meta: { title: 'Prescriptions - Medivia' }
                 },
                 {
                     path: 'lab-results',
-                    name: 'lab-results',
+                    name: 'patient-lab-results',
                     component: () => import('../views/LabResults.vue'),
                     meta: { title: 'Lab Results - Medivia' }
                 },
                 {
                     path: 'appointments',
-                    name: 'appointments',
+                    name: 'patient-appointments',
                     component: () => import('../views/Appointments.vue'),
                     meta: { title: 'My Appointments - Medivia' }
                 },
                 {
                     path: 'visits',
-                    name: 'visits',
+                    name: 'patient-visits',
                     component: () => import('../views/Visits.vue'),
                     meta: { title: 'My Visits - Medivia' }
                 },
                 {
                     path: 'profile',
-                    name: 'profile',
+                    name: 'patient-profile',
                     component: () => import('../views/ProfileSettings.vue'),
                     meta: { title: 'Profile Settings - Medivia' }
                 }

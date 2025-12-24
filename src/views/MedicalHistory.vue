@@ -7,104 +7,20 @@ import { generatePDF } from '../utils/pdfGenerator'
 const showModal = ref(false)
 
 const query = ref('')
-const items = ref([
-  { 
-    id: 1, 
-    type: 'Annual Physical', 
-    date: 'Nov 28, 2025', 
-    title: 'Routine annual examination - Patient in good health', 
-    summary: 'Recommended continued exercise routine, healthy diet. Scheduled follow-up blood work in 6 months. Updated tetanus vaccination.', 
-    doctor: 'Dr. Michael Chen', 
-    specialty: 'Primary Care',
-    files: [
-      { name: 'Physical_Exam_Report.pdf', size: '245 KB', type: 'pdf' },
-      { name: 'Vaccination_Record.pdf', size: '128 KB', type: 'pdf' }
-    ],
-    expanded: true
-  },
-  { 
-    id: 2, 
-    type: 'Follow-up', 
-    date: 'Oct 15, 2025', 
-    title: 'Hypertension management - Blood pressure well controlled', 
-    summary: 'Continue current medication (Lisinopril 10mg daily). Patient shows good compliance. Blood pressure readings stable at 120/80 mmHg. Next cardiology visit in 3 months.', 
-    doctor: 'Dr. Sarah Johnson', 
-    specialty: 'Cardiology',
-    files: [
-       { name: 'BP_Monitoring_Chart.pdf', size: '156 KB', type: 'pdf' },
-       { name: 'EKG_Results.pdf', size: '312 KB', type: 'pdf' }
-    ],
-    expanded: false 
-  },
-  { 
-    id: 3, 
-    type: 'Consultation', 
-    date: 'Sep 8, 2025', 
-    title: 'Benign skin lesion - No concerning features', 
-    summary: 'Performed visual examination and dermoscopy. Lesion appears benign with no atypical features. Recommended routine skin checks annually. Patient educated on sun protection.', 
-    doctor: 'Dr. Emily Rodriguez', 
-    specialty: 'Dermatology',
-    files: [
-       { name: 'Dermoscopy_Image_1.jpg', size: '1.2 MB', type: 'image' },
-       { name: 'Dermoscopy_Image_2.jpg', size: '1.1 MB', type: 'image' },
-       { name: 'Consultation_Notes.pdf', size: '130 KB', type: 'pdf' }
-    ],
-    expanded: false 
-  },
-  { 
-    id: 4, 
-    type: 'Sick Visit', 
-    date: 'Jul 22, 2025', 
-    title: 'Acute Upper Respiratory Infection', 
-    summary: 'Prescribed rest, increased fluid intake, and OTC symptom relief. Symptoms include mild cough and congestion. No antibiotics needed. Follow up if symptoms worsen or persist beyond 7-10 days.', 
-    doctor: 'Dr. Michael Chen', 
-    specialty: 'Primary Care',
-    files: [
-       { name: 'Visit_Summary.pdf', size: '95 KB', type: 'pdf' }
-    ],
-    expanded: false 
-  },
-  { 
-    id: 5, 
-    type: 'Consultation', 
-    date: 'May 10, 2025', 
-    title: 'Mild knee pain - Likely overuse strain', 
-    summary: 'Recommended RICE protocol (Rest, Ice, Compression, Elevation). Prescribed physical therapy exercises. Advised reducing high-impact activities for 2-3 weeks. No imaging required at this time.', 
-    doctor: 'Dr. James Park', 
-    specialty: 'Orthopedics',
-    files: [
-       { name: 'PT_Exercise_Plan.pdf', size: '445 KB', type: 'pdf' },
-       { name: 'Orthopedic_Assessment.pdf', size: '203 KB', type: 'pdf' }
-    ],
-    expanded: false 
-  },
-  { 
-    id: 6, 
-    type: 'Initial Consultation', 
-    date: 'Mar 3, 2025', 
-    title: 'Stage 1 Hypertension - Newly diagnosed', 
-    summary: 'Initiated treatment with Lisinopril 10mg daily. Discussed lifestyle modifications including sodium reduction, regular exercise, stress management. Patient education on home blood pressure monitoring.', 
-    doctor: 'Dr. Sarah Johnson', 
-    specialty: 'Cardiology',
-    files: [
-       { name: 'Cardiology_Initial_Assessment.pdf', size: '567 KB', type: 'pdf' },
-       { name: 'BP_Home_Monitoring_Guide.pdf', size: '234 KB', type: 'pdf' },
-       { name: 'Medication_Information.pdf', size: '170 KB', type: 'pdf' }
-    ],
-    expanded: false 
-  },
-  { 
-    id: 7, 
-    type: 'Initial Consultation', 
-    date: 'Feb 10, 2025', 
-    title: 'Routine Checkup - Healthy', 
-    summary: 'No issues reported. Patient in good health.', 
-    doctor: 'Dr. Michael Chen', 
-    specialty: 'Primary Care',
-    files: [],
-    expanded: false 
-  }
-])
+const STORAGE_KEY = 'medivia_medical_history'
+
+const getStoredItems = () => {
+  const stored = localStorage.getItem(STORAGE_KEY)
+  return stored ? JSON.parse(stored) : []
+}
+
+const items = ref(getStoredItems())
+
+// Save to localStorage whenever items change
+import { watch } from 'vue'
+watch(items, (newVal) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
+}, { deep: true })
 
 const filteredItems = computed(() => {
   const q = query.value.toLowerCase()
