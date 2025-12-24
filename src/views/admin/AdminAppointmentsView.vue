@@ -1,3 +1,4 @@
+<script setup>
 import { ref, computed } from 'vue'
 import { 
   MagnifyingGlassIcon, 
@@ -180,15 +181,15 @@ const toggleExpand = (id) => {
 
              <!-- Action Bar -->
               <div class="mt-8 pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-4" v-if="appt.status === 'Pending'">
-                  <BaseButton class="bg-[#10B981] hover:bg-[#059669] text-white border-transparent w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-1 sm:order-none font-semibold text-sm transition-all duration-200">
-                      <CheckCircleIcon class="w-5 h-5 mr-2" /> Approve Appointment
-                  </BaseButton>
-                  <BaseButton class="bg-[#EF4444] hover:bg-[#DC2626] text-white border-transparent w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-2 sm:order-none font-semibold text-sm transition-all duration-200">
-                      <XCircleIcon class="w-5 h-5 mr-2" /> Cancel Appointment
-                  </BaseButton>
-                   <BaseButton class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-3 sm:order-none font-semibold text-sm transition-all duration-200">
-                      <PencilSquareIcon class="w-5 h-5 mr-2"/> Edit Appointment
-                  </BaseButton>
+                   <BaseButton class="bg-[#10B981] hover:bg-[#059669] text-white border-transparent w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-1 sm:order-none font-semibold text-sm transition-all duration-200">
+                       <CheckCircleIcon class="w-5 h-5 mr-2" /> Approve Appointment
+                   </BaseButton>
+                   <BaseButton class="bg-[#EF4444] hover:bg-[#DC2626] text-white border-transparent w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-2 sm:order-none font-semibold text-sm transition-all duration-200">
+                       <XCircleIcon class="w-5 h-5 mr-2" /> Cancel Appointment
+                   </BaseButton>
+                    <BaseButton class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-3 sm:order-none font-semibold text-sm transition-all duration-200">
+                       <PencilSquareIcon class="w-5 h-5 mr-2"/> Edit Appointment
+                   </BaseButton>
               </div>
              <div class="mt-8 pt-8 border-t border-gray-100 flex justify-center sm:justify-end w-full" v-else>
                   <BaseButton class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 h-11 px-6 rounded-[10px] flex items-center gap-2 font-medium text-sm transition-all duration-200">
