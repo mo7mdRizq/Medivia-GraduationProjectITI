@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
+import { db } from '../util/storage'
 import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
@@ -9,6 +10,9 @@ import SocialAuthButtons from '../components/auth/SocialAuthButtons.vue'
 import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
+const pendingRole = db.get('pendingRole')
+const roleTitle = pendingRole ? pendingRole.charAt(0).toUpperCase() + pendingRole.slice(1) : ''
+
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
@@ -43,15 +47,15 @@ const validate = () => {
 const handleLogin = () => {
   if (validate()) {
     // 1. Check for Admin Credentials
-    const storedAdmin = JSON.parse(localStorage.getItem('adminCredentials') || '{"username": "admin@gmail.com", "password": "Adminadmin207#"}')
+    const storedAdmin = db.get('adminCredentials') || { username: 'admin@gmail.com', password: 'Adminadmin207#' }
     
     if (email.value === storedAdmin.username && password.value === storedAdmin.password) {
        toast.success("Welcome, Administrator", {
           transition: toast.TRANSITIONS.ZOOM,
        })
-       localStorage.setItem('isAuthenticated', 'true')
-       localStorage.setItem('userRole', 'admin')
-       localStorage.setItem('userName', 'Administrator')
+       db.set('isAuthenticated', true)
+       db.set('userRole', 'admin')
+       db.set('userName', 'Administrator')
        
        setTimeout(() => {
            router.push('/admin/dashboard')
@@ -60,7 +64,7 @@ const handleLogin = () => {
     }
 
     // 2. Check for Registered User (from localStorage)
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const users = db.get('registeredUsers') || []
     const user = users.find(u => u.email === email.value && u.password === password.value)
     
     if (!user) {
@@ -69,20 +73,28 @@ const handleLogin = () => {
       })
       return
     }
+
+    // 3. Stricter role check
+    const pendingRole = db.get('pendingRole')
+    if (pendingRole && user.role && user.role !== pendingRole) {
+      toast.error(`This account is registered as a ${user.role}. You cannot login as a ${pendingRole}.`)
+      return
+    }
     
     // Store auth state for User
-    localStorage.setItem('isAuthenticated', 'true')
-    localStorage.removeItem('userRole') // Clear any previous role selection
-    localStorage.setItem('userEmail', email.value)
-    localStorage.setItem('userName', user.fullName)
+    db.set('isAuthenticated', true)
+    db.set('userRole', user.role || pendingRole) // Prioritize existing role
+    db.set('userEmail', email.value)
+    db.set('userName', user.fullName)
+    db.remove('pendingRole')
     
     toast.success(`Welcome back, ${user.fullName}!`, {
         transition: toast.TRANSITIONS.ZOOM,
     })
     
-    // Redirect to role selection
+    // Redirect to dashboard based on role
     setTimeout(() => {
-        router.push('/select-role')
+        router.push('/')
     }, 500)
   }
 }
@@ -96,6 +108,7 @@ const handleLogin = () => {
     badgeColor="text-green-400 bg-green-400"
     tipTitle="Daily Tip"
     tipText="Drink water throughout the day to boost energy and support overall health."
+    hideLogo
   >
     <template #description>
       Track your results, view your records, and manage everything in one seamless experience.
@@ -103,7 +116,7 @@ const handleLogin = () => {
 
     <!-- Right Side Content -->
     <div class="w-full">
-      <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ roleTitle ? roleTitle + ' ' : '' }}Login</h2>
       <p class="text-gray-500 mb-8">Access your personal medical record securely.</p>
 
       <form @submit.prevent="handleLogin">

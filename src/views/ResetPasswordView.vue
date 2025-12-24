@@ -2,10 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
+import { LockClosedIcon, EyeIcon, EyeSlashIcon, ArrowLeftIcon, KeyIcon } from '@heroicons/vue/24/outline'
+import { db } from '../util/storage'
 import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
-import { LockClosedIcon, EyeIcon, EyeSlashIcon, ArrowLeftIcon, KeyIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const password = ref('')
@@ -49,7 +50,7 @@ const validate = () => {
 const handleResetPassword = () => {
   if (validate()) {
     // Get the email from session storage (set in ForgotPasswordView)
-    const resetEmail = sessionStorage.getItem('resetPasswordEmail')
+    const resetEmail = db.get('resetPasswordEmail')
     
     if (!resetEmail) {
       toast.error('Reset session expired. Please request a new password reset link.')
@@ -57,8 +58,8 @@ const handleResetPassword = () => {
       return
     }
     
-    // Update the user's password in localStorage
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    // Update the user's password in the database
+    const users = db.get('registeredUsers') || []
     const userIndex = users.findIndex(u => u.email === resetEmail)
     
     if (userIndex === -1) {
@@ -69,7 +70,7 @@ const handleResetPassword = () => {
     
     // Update the password
     users[userIndex].password = password.value
-    localStorage.setItem('registeredUsers', JSON.stringify(users))
+    db.set('registeredUsers', users)
     
     // Clear the reset email from session
     sessionStorage.removeItem('resetPasswordEmail')
@@ -88,6 +89,7 @@ const handleResetPassword = () => {
     subtitle="Password."
     badgeText="New Credentials"
     badgeColor="text-blue-400"
+    hideLogo
     :badgeIcon="KeyIcon"
     tipTitle="Security Tip"
     tipText="'Prioritize sleep tonight for a healthier, more vibrant tomorrow.'"

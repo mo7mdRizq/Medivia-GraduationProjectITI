@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
+import { db } from '../util/storage'
 import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
@@ -9,6 +10,8 @@ import SocialAuthButtons from '../components/auth/SocialAuthButtons.vue'
 import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
+const pendingRole = db.get('pendingRole')
+const roleTitle = pendingRole ? pendingRole.charAt(0).toUpperCase() + pendingRole.slice(1) : ''
 
 const fullName = ref('')
 const email = ref('')
@@ -71,7 +74,7 @@ const validate = () => {
 const handleRegister = () => {
   if (validate()) {
     // Check if user already exists
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const users = db.get('registeredUsers') || []
     const userExists = users.some(user => user.email === email.value)
     
     if (userExists) {
@@ -79,13 +82,17 @@ const handleRegister = () => {
       return
     }
     
+    // Get role from pending selection
+    const selectedRole = db.get('pendingRole') || 'patient'
+
     // Store new user credentials
     users.push({
       fullName: fullName.value,
       email: email.value,
-      password: password.value // In a real app, this would be hashed
+      password: password.value, // In a real app, this would be hashed
+      role: selectedRole
     })
-    localStorage.setItem('registeredUsers', JSON.stringify(users))
+    db.set('registeredUsers', users)
     
     toast.success('Registration successful! Please login.')
     router.push('/login')
@@ -101,13 +108,14 @@ const handleRegister = () => {
      badgeColor="text-green-400 bg-green-400"
     tipTitle="Did you know?"
     tipText="Securely access your medical records anytime."
+    hideLogo
   >
     <template #description>
       Create your digital health vault today. Secure, accessible, and designed for your peace of mind.
     </template>
 
     <div class="w-full">
-      <h2 class="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">Create {{ roleTitle }} Account</h2>
       <p class="text-gray-500 mb-8">Enter your data to register your patient profile.</p>
 
       <form @submit.prevent="handleRegister">

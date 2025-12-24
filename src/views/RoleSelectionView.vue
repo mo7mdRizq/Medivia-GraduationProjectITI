@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
+import { db } from '../util/storage'
 import { toast } from 'vue3-toastify'
 import { UserIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
 
@@ -39,16 +40,16 @@ const selectRole = (role) => {
   selectedRole.value = role.id
   isTransitioning.value = true
   
-  // Store the role in localStorage
-  localStorage.setItem('userRole', role.id)
+  // Store the role as pending in the database
+  db.set('pendingRole', role.id)
   
-  toast.success(`Welcome, ${role.title}!`, {
+  toast.success(`Intent selected: ${role.title}. Proceeding to registration...`, {
     transition: toast.TRANSITIONS.ZOOM,
   })
   
-  // Redirect after a brief delay
+  // Redirect to registration after a brief delay
   setTimeout(() => {
-    router.push(role.route)
+    router.push('/register')
   }, 800)
 }
 </script>
@@ -149,10 +150,10 @@ const selectRole = (role) => {
       <!-- Logout Link -->
       <div class="text-center">
         <button 
-          @click="() => { localStorage.clear(); router.push('/login'); }"
+          @click="() => { db.clear(); router.push('/login'); }"
           class="text-sm text-gray-500 hover:text-gray-700 transition-colors underline"
         >
-          Not you? Logout
+          Reset Session
         </button>
       </div>
     </div>

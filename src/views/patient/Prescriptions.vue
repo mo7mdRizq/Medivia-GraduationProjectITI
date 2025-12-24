@@ -1,147 +1,25 @@
-<script setup>
+﻿<script setup>
 import { ref, computed } from 'vue'
-import AIPrescriptionModal from '../components/AIPrescriptionModal.vue'
+import AIPrescriptionModal from '../../components/AIPrescriptionModal.vue'
 import Swal from 'sweetalert2'
-import { generatePDF } from '../utils/pdfGenerator'
+import { generatePDF } from '../../utils/pdfGenerator'
+import { 
+  prescriptions, 
+  activeCount, 
+  refillSoonCount, 
+  completedCount, 
+  addPrescription 
+} from '../../stores/prescriptionsStore'
 
 const showAIModal = ref(false)
 
-const prescriptions = ref([
-  {
-    id: 1,
-    medication: 'Metformin',
-    dosage: '500mg',
-    status: 'Active',
-    condition: 'Endocrinology',
-    frequency: 'Twice daily',
-    duration: '3 months',
-    instructions: 'Take with meals to reduce stomach upset. Monitor blood sugar levels regularly. Avoid excessive alcohol consumption.',
-    doctor: 'Dr. Sarah Johnson',
-    lastRefill: 'Dec 10, 2025',
-    nextRefill: 'Jan 9, 2026',
-    refillsRemaining: 3
-  },
-  {
-    id: 2,
-    medication: 'Lisinopril',
-    dosage: '10mg',
-    status: 'Active',
-    condition: 'Hypertension Management',
-    frequency: 'Once daily',
-    duration: 'Ongoing',
-    instructions: 'Take in the morning with or without food. Monitor blood pressure regularly. Avoid potassium supplements without consulting your doctor.',
-    doctor: 'Dr. Sarah Johnson',
-    lastRefill: 'Dec 1, 2025',
-    nextRefill: 'Dec 31, 2025',
-    refillsRemaining: 2
-  },
-  {
-    id: 3,
-    medication: 'Atorvastatin',
-    dosage: '20mg',
-    status: 'Active',
-    condition: 'Cholesterol Management',
-    frequency: 'Once daily at bedtime',
-    duration: 'Ongoing',
-    instructions: 'Take at bedtime with or without food. Avoid grapefruit and grapefruit juice. Report any unexplained muscle pain.',
-    doctor: 'Dr. Sarah Johnson',
-    lastRefill: 'Nov 20, 2025',
-    nextRefill: 'Dec 20, 2025',
-    refillsRemaining: 1
-  },
-  {
-    id: 4,
-    medication: 'Vitamin D3',
-    dosage: '2000 IU',
-    status: 'Active',
-    condition: 'Vitamin D Deficiency',
-    frequency: 'Once daily',
-    duration: '6 months',
-    instructions: 'Take with fatty meal for better absorption. Can be taken at any time of the day.',
-    doctor: 'Dr. Michael Chen',
-    lastRefill: 'Nov 28, 2025',
-    nextRefill: 'Jan 28, 2026',
-    refillsRemaining: 2
-  },
-  {
-    id: 5,
-    medication: 'Omeprazole',
-    dosage: '20mg',
-    status: 'Active',
-    condition: 'Acid Reflux',
-    frequency: 'Once daily before breakfast',
-    duration: '3 months',
-    instructions: 'Take 30 minutes before breakfast. Swallow whole, do not crush or chew. May take 1-4 days for full effect.',
-    doctor: 'Dr. Emily Davis',
-    lastRefill: 'Oct 10, 2025',
-    nextRefill: 'Nov 10, 2025',
-    refillsRemaining: 0
-  },
-  {
-    id: 6,
-    medication: 'Amoxicillin',
-    dosage: '500mg',
-    status: 'Completed',
-    condition: 'Acute Respiratory Infection',
-    frequency: 'Every three times daily',
-    duration: '10 days',
-    instructions: 'Take every 8 hours for 10 days. Complete the entire course even if symptoms improve. Take with food if stomach upset occurs.',
-    doctor: 'Dr. Emily Davis',
-    completionDate: 'Aug 5, 2025'
-  },
-  {
-    id: 7,
-    medication: 'Ibuprofen',
-    dosage: '400mg',
-    status: 'Completed',
-    condition: 'Acute Pain Reliever',
-    frequency: 'Every six hours as needed',
-    duration: 'As needed',
-    instructions: 'Take with food or milk to avoid stomach irritation. Do not exceed 1200mg in 24 hours. Stop if pain persists for more than 10 days.',
-    doctor: 'Dr. Michael Chen',
-    completionDate: 'May 24, 2025'
-  },
-  {
-    id: 8,
-    medication: 'Aspirin',
-    dosage: '81mg',
-    status: 'Active',
-    condition: 'Cardiovascular Protection',
-    frequency: 'Once daily',
-    duration: 'Ongoing',
-    instructions: 'Take with food to reduce risk of stomach upset. Low-dose aspirin for heart health. Do not stop suddenly without consulting your doctor.',
-    doctor: 'Dr. Sarah Johnson',
-    lastRefill: 'Oct 10, 2025',
-    nextRefill: 'Feb 15, 2026',
-    refillsRemaining: 4
-  },
-  {
-    id: 9,
-    medication: 'Cetirizine',
-    dosage: '10mg',
-    status: 'Active',
-    condition: 'Seasonal Allergies',
-    frequency: 'Once daily',
-    duration: 'As needed',
-    instructions: 'Take once daily in the morning or evening. Can be taken with or without food. Avoid alcohol while taking this medication.',
-    doctor: 'Dr. Emily Davis',
-    lastRefill: 'Oct 1, 2025',
-    nextRefill: 'Not applicable',
-    refillsRemaining: 6
-  }
-])
-/* Computed Properties for Dynamic Counts */
-const activeCount = computed(() => prescriptions.value.filter(p => p.status === 'Active').length)
-const refillSoonCount = computed(() => prescriptions.value.filter(p => p.status === 'Active' && p.refillsRemaining <= 2).length)
-const completedCount = computed(() => prescriptions.value.filter(p => p.status === 'Completed').length)
-
 const handleAddPrescription = (newPrescription) => {
-  prescriptions.value.unshift(newPrescription)
+  addPrescription(newPrescription)
   Swal.fire({
     title: 'Success!',
     text: 'Prescription added successfully',
     icon: 'success',
-    confirmButtonColor: '#0d9488'
+    confirmButtonColor: '#5A4FF3'
   })
 }
 
@@ -174,7 +52,7 @@ const requestRefill = async (item) => {
     text: `Do you want to request a refill for ${item.medication}?`,
     icon: 'question',
     showCancelButton: true,
-    confirmButtonColor: '#0d9488',
+    confirmButtonColor: '#5A4FF3',
     cancelButtonColor: '#d33',
     confirmButtonText: 'Yes, request it!'
   })
@@ -184,7 +62,7 @@ const requestRefill = async (item) => {
       title: 'Request Sent!',
       text: 'Your refill request has been sent to the pharmacy.',
       icon: 'success',
-      confirmButtonColor: '#0d9488'
+      confirmButtonColor: '#5A4FF3'
     })
   }
 }
@@ -198,7 +76,7 @@ const requestRefill = async (item) => {
         <h1 class="text-3xl font-bold text-slate-900 mb-2">Prescriptions</h1>
         <p class="text-slate-600">Manage and view all your current and past prescriptions</p>
       </div>
-      <button @click="showAIModal = true" class="flex items-center justify-center gap-2 rounded-lg bg-teal-500 px-6 py-2.5 text-white font-semibold hover:bg-teal-600 transition-colors shadow-sm">
+      <button @click="showAIModal = true" class="flex items-center justify-center gap-2 rounded-xl bg-[#5A4FF3] px-6 py-3 text-white font-bold hover:bg-[#4F46E5] transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
         </svg>
@@ -244,7 +122,7 @@ const requestRefill = async (item) => {
         <!-- Card Header -->
         <div class="flex justify-between items-start mb-4">
           <div class="flex gap-4">
-            <div :class="prescription.status === 'Active' ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-500'" 
+            <div :class="prescription.status === 'Active' ? 'bg-indigo-50 text-[#5A4FF3]' : 'bg-slate-100 text-slate-500'" 
                  class="h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
@@ -326,7 +204,7 @@ const requestRefill = async (item) => {
 
         <!-- Buttons -->
         <div class="flex gap-3">
-          <button @click="downloadPDF(prescription)" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
+          <button @click="downloadPDF(prescription)" class="flex-1 bg-[#5A4FF3] hover:bg-[#4F46E5] text-white text-sm font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 active:scale-95">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>

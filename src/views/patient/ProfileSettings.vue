@@ -1,32 +1,46 @@
-<script setup>
-import { ref, reactive } from 'vue'
+﻿<script setup>
+import { ref, reactive, watch } from 'vue'
+import { db } from '../../util/storage'
+
+const STORAGE_KEY = 'user_profile'
 
 // --- Data ---
-const personalInfo = ref({
-  firstName: 'John',
-  lastName: 'Doe',
-  dob: '1985-06-15', // Changed to ISO date for input type="date"
-  gender: 'Male',
-  email: 'john.doe@email.com',
-  phone: '(555) 123-4567',
-  address: '123 Main Street',
-  city: 'San Francisco',
-  state: 'CA',
-  zip: '94102'
-})
+const defaultProfile = {
+  personalInfo: {
+    firstName: 'John',
+    lastName: 'Doe',
+    dob: '1985-06-15',
+    gender: 'Male',
+    email: 'john.doe@email.com',
+    phone: '(555) 123-4567',
+    address: '123 Main Street',
+    city: 'San Francisco',
+    state: 'CA',
+    zip: '94102'
+  },
+  medicalInfo: {
+    bloodType: 'O+',
+    allergies: ['Penicillin', 'Shellfish'],
+    conditions: ['Hypertension', 'Seasonal Allergies']
+  },
+  emergencyContact: {
+    name: 'Jane Doe',
+    relationship: 'Spouse',
+    phone: '(555) 987-6543',
+    email: 'jane.doe@email.com'
+  }
+}
 
-const medicalInfo = ref({
-  bloodType: 'O+',
-  allergies: ['Penicillin', 'Shellfish'],
-  conditions: ['Hypertension', 'Seasonal Allergies']
-})
+const profile = ref(db.get(STORAGE_KEY) || defaultProfile)
 
-const emergencyContact = ref({
-  name: 'Jane Doe',
-  relationship: 'Spouse',
-  phone: '(555) 987-6543',
-  email: 'jane.doe@email.com'
-})
+const personalInfo = ref(profile.value.personalInfo)
+const medicalInfo = ref(profile.value.medicalInfo)
+const emergencyContact = ref(profile.value.emergencyContact)
+
+// Persist to db on changes
+watch(profile, (newVal) => {
+  db.set(STORAGE_KEY, newVal)
+}, { deep: true })
 
 // --- Edit States ---
 const isEditingPersonal = ref(false)

@@ -9,6 +9,8 @@ import {
   BellIcon,
   ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
+import { db } from '@/util/storage'
+import { toast } from 'vue3-toastify'
 
 const profile = ref({
   name: 'Admin User',
@@ -29,7 +31,6 @@ const security = ref({
 
 const showPasswordForm = ref(false)
 const newPassword = ref('')
-import { toast } from 'vue3-toastify'
 
 const updatePassword = () => {
     if (!newPassword.value) {
@@ -37,10 +38,10 @@ const updatePassword = () => {
         return
     }
     
-    // Update admin credentials in localStorage
-    const storedAdmin = JSON.parse(localStorage.getItem('adminCredentials') || '{"username": "admin@gmail.com", "password": "Adminadmin207#"}')
+    // Update admin credentials in the database
+    const storedAdmin = db.get('adminCredentials') || { username: 'admin@gmail.com', password: 'Adminadmin207#' }
     storedAdmin.password = newPassword.value
-    localStorage.setItem('adminCredentials', JSON.stringify(storedAdmin))
+    db.set('adminCredentials', storedAdmin)
     
     toast.success("Password updated successfully!")
     showPasswordForm.value = false

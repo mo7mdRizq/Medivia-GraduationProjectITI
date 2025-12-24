@@ -1,7 +1,10 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { db } from '../util/storage'
+
+const STORAGE_KEY = 'appointments'
 
 // Shared appointments state
-export const appointments = ref([
+export const appointments = ref(db.get(STORAGE_KEY) || [
     {
         id: 1,
         type: 'Follow-up Consultation',
@@ -135,6 +138,11 @@ export const appointments = ref([
         category: 'past'
     }
 ])
+
+// Persist to db on changes
+watch(appointments, (newVal) => {
+    db.set(STORAGE_KEY, newVal)
+}, { deep: true })
 
 // Helper function to add a new appointment
 export const addAppointment = (newAppointment) => {

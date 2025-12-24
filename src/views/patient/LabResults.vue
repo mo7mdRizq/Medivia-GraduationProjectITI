@@ -1,120 +1,158 @@
-<script setup>
-import { ref, computed } from 'vue'
-import UploadLabResultModal from '../components/UploadLabResultModal.vue'
+﻿<script setup>
+import { ref, computed, nextTick } from 'vue'
+import UploadLabResultModal from '../../components/UploadLabResultModal.vue'
 import Swal from 'sweetalert2'
-import { generatePDF } from '../utils/pdfGenerator'
+import { generatePDF } from '../../utils/pdfGenerator'
+import { Chart, registerables } from 'chart.js'
+import { 
+  labResults, 
+  historicalData, 
+  totalTests, 
+  normalResultsCount, 
+  attentionResultsCount, 
+  addLabResult 
+} from '../../stores/labResultsStore'
+
+// Register Chart.js components
+Chart.register(...registerables)
 
 const showModal = ref(false)
-
-const labResults = ref([
-  {
-    id: 1,
-    testName: 'Complete Blood Count (CBC)',
-    category: 'Hematology',
-    date: 'Dec 5, 2025',
-    orderedBy: 'Dr. Michael Chen',
-    status: 'Normal',
-    expanded: true,
-    results: [
-      { name: 'White Blood Cells', value: '7.2 K/µL', range: '4.8 - 11 K/µL', status: 'normal' },
-      { name: 'Red Blood Cells', value: '4.8 M/uL', range: '4.5 - 6.5 M/uL', status: 'normal' },
-      { name: 'Hemoglobin', value: '14.5 g/dL', range: '13.5 - 17.5 g/dL', status: 'normal' },
-      { name: 'Hematocrit', value: '43.2 %', range: '38.0 - 50 %', status: 'normal' },
-      { name: 'Platelets', value: '245 K/µL', range: '150 - 450 K/µL', status: 'normal' }
-    ]
-  },
-  {
-    id: 2,
-    testName: 'Lipid Panel',
-    category: 'Chemistry',
-    date: 'Nov 20, 2025',
-    orderedBy: 'Dr. Sarah Johnson',
-    status: 'Attention',
-    expanded: true,
-    results: [
-      { name: 'Total Cholesterol', value: '206 mg/dL', range: '0 - 200 mg/dL', status: 'high' },
-      { name: 'LDL Cholesterol', value: '135 mg/dL', range: '0 - 100 mg/dL', status: 'high' },
-      { name: 'HDL Cholesterol', value: '52 mg/dL', range: '40 - 599 mg/dL', status: 'normal' },
-      { name: 'Triglycerides', value: '145 mg/dL', range: '0 - 150 mg/dL', status: 'normal' },
-      { name: 'VLDL Cholesterol', value: '29 mg/dL', range: '5 - 40 mg/dL', status: 'normal' }
-    ]
-  },
-  {
-    id: 3,
-    testName: 'Comprehensive Metabolic Panel',
-    category: 'Chemistry',
-    date: 'Nov 28, 2025',
-    orderedBy: 'Dr. Michael Chen',
-    status: 'Normal',
-    expanded: false,
-    results: []
-  },
-  {
-    id: 4,
-    testName: 'Thyroid Function Panel',
-    category: 'Endocrinology',
-    date: 'Oct 10, 2025',
-    orderedBy: 'Dr. Michael Chen',
-    status: 'Normal',
-    expanded: false,
-    results: []
-  },
-  {
-    id: 5,
-    testName: 'Hemoglobin A1C',
-    category: 'Chemistry',
-    date: 'Nov 28, 2025',
-    orderedBy: 'Dr. Michael Chen',
-    status: 'Normal',
-    expanded: false,
-    results: []
-  },
-  {
-    id: 6,
-    testName: 'Vitamin D',
-    category: 'Vitamins',
-    date: 'Nov 28, 2025',
-    orderedBy: 'Dr. Michael Chen',
-    status: 'Attention',
-    expanded: false,
-    results: []
-  },
-  {
-    id: 7,
-    testName: 'Liver Function Panel',
-    category: 'Chemistry',
-    date: 'Oct 15, 2025',
-    orderedBy: 'Dr. Sarah Johnson',
-    status: 'Normal',
-    expanded: false,
-    results: []
-  }
-])
-/* Computed Properties for Dynamic Counts */
-const totalTests = computed(() => labResults.value.length)
-const normalResultsCount = computed(() => labResults.value.filter(r => r.status === 'Normal').length)
-const attentionResultsCount = computed(() => labResults.value.filter(r => r.status === 'Attention').length)
 
 const toggleResult = (index) => {
   labResults.value[index].expanded = !labResults.value[index].expanded
 }
 
 const handleAddResult = (newResult) => {
-  labResults.value.unshift(newResult)
+  addLabResult(newResult)
   Swal.fire({
     title: 'Result Uploaded!',
     text: 'Laboratory result has been processed and saved.',
     icon: 'success',
-    confirmButtonColor: '#0d9488'
+    confirmButtonColor: '#5A4FF3'
   })
 }
 
-const viewTrend = (result) => {
-  Swal.fire({
-    title: 'Trend Analysis',
-    text: `Trend chart feature for ${result.testName} is coming in the next update!`,
-    icon: 'info',
-    confirmButtonColor: '#0d9488'
+let chartInstance = null
+
+const viewTrend = async (result) => {
+  const testData = historicalData[result.testName]
+  
+  if (!testData) {
+    Swal.fire({
+      title: 'No Historical Data',
+      text: `No historical trend data available for ${result.testName} yet. Data will be collected over time.`,
+      icon: 'info',
+      confirmButtonColor: '#5A4FF3'
+    })
+    return
+  }
+
+  const { value: formValues } = await Swal.fire({
+    title: `<div style="display: flex; align-items: center; gap: 10px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#5A4FF3">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+              <span>${result.testName} - Trend Analysis</span>
+            </div>`,
+    html: `
+      <div style="text-align: left; margin-bottom: 15px;">
+        <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">
+          Historical values tracked over time to monitor your health progress.
+        </p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
+          ${testData.datasets.map(ds => `
+            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: ${ds.backgroundColor}; border: 1px solid ${ds.borderColor}; border-radius: 20px; font-size: 11px; color: ${ds.borderColor}; font-weight: 600;">
+              <span style="width: 8px; height: 8px; background: ${ds.borderColor}; border-radius: 50%;"></span>
+              ${ds.label}
+            </span>
+          `).join('')}
+        </div>
+      </div>
+      <div style="position: relative; height: 300px; width: 100%;">
+        <canvas id="trendChart"></canvas>
+      </div>
+      <div style="margin-top: 15px; padding: 12px; background: #f0fdfa; border-radius: 8px; border: 1px solid #99f6e4;">
+        <p style="font-size: 12px; color: #0d9488; margin: 0;">
+          <strong>📊 Analysis:</strong> ${result.status === 'Normal' ? 'All values are within the normal range. Keep up the good work!' : 'Some values need attention. Please consult with your doctor for personalized advice.'}
+        </p>
+      </div>
+    `,
+    width: 700,
+    showCloseButton: true,
+    showConfirmButton: true,
+    confirmButtonText: 'Close',
+    confirmButtonColor: '#5A4FF3',
+    didOpen: () => {
+      const ctx = document.getElementById('trendChart')
+      if (ctx) {
+        if (chartInstance) {
+          chartInstance.destroy()
+        }
+        chartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: testData.labels,
+            datasets: testData.datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: true,
+                callbacks: {
+                  label: function(context) {
+                    return ` ${context.dataset.label}: ${context.parsed.y}`
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#64748b',
+                  font: {
+                    size: 11
+                  }
+                }
+              },
+              y: {
+                grid: {
+                  color: 'rgba(100, 116, 139, 0.1)'
+                },
+                ticks: {
+                  color: '#64748b',
+                  font: {
+                    size: 11
+                  }
+                }
+              }
+            }
+          }
+        })
+      }
+    },
+    willClose: () => {
+      if (chartInstance) {
+        chartInstance.destroy()
+        chartInstance = null
+      }
+    }
   })
 }
 
@@ -157,7 +195,7 @@ const downloadPDF = (result) => {
         <h1 class="text-3xl font-bold text-slate-900 mb-2">Lab Results</h1>
         <p class="text-slate-600">View and track your laboratory test results over time</p>
       </div>
-      <button @click="showModal = true" class="flex items-center justify-center gap-2 rounded-lg bg-teal-600 px-6 py-2.5 text-white font-semibold hover:bg-teal-700 transition-colors shadow-sm">
+      <button @click="showModal = true" class="flex items-center justify-center gap-2 rounded-xl bg-[#5A4FF3] px-6 py-2.5 text-white font-bold hover:bg-[#4F46E5] transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
         </svg>

@@ -1,8 +1,8 @@
-<script setup>
+﻿<script setup>
 import { ref, computed } from 'vue'
-import BookAppointmentModal from '../components/BookAppointmentModal.vue'
+import BookAppointmentModal from '../../components/BookAppointmentModal.vue'
 import Swal from 'sweetalert2'
-import { appointments, addAppointment, upcomingCount, pendingCount, pastCount, totalAppointments } from '../stores/appointmentsStore'
+import { appointments, addAppointment, upcomingCount, pendingCount, pastCount, totalAppointments } from '../../stores/appointmentsStore'
 
 const showModal = ref(false)
 
@@ -32,7 +32,7 @@ const handleBookAppointment = (newAppointment) => {
     title: 'Appointment Booked!',
     text: `Your appointment with ${newAppointment.doctor} on ${newAppointment.date} is pending confirmation.`,
     icon: 'success',
-    confirmButtonColor: '#0d9488'
+    confirmButtonColor: '#5A4FF3'
   })
 }
 
@@ -43,7 +43,7 @@ const rescheduleAppointment = async (apt) => {
     input: 'date',
     inputValue: new Date(apt.date).toISOString().split('T')[0],
     showCancelButton: true,
-    confirmButtonColor: '#0d9488',
+    confirmButtonColor: '#5A4FF3',
     cancelButtonColor: '#d33',
     inputValidator: (value) => {
       if (!value) {
@@ -59,7 +59,7 @@ const rescheduleAppointment = async (apt) => {
       title: 'Rescheduled!',
       text: `Appointment requested for ${newDate}.`,
       icon: 'success',
-      confirmButtonColor: '#0d9488'
+      confirmButtonColor: '#5A4FF3'
     })
   }
 }
@@ -94,7 +94,7 @@ const cancelAppointment = async (apt) => {
         <h1 class="text-3xl font-bold text-slate-900 mb-2">Appointments</h1>
         <p class="text-slate-600">Manage your healthcare appointments</p>
       </div>
-      <button @click="showModal = true" class="w-full md:w-auto flex items-center justify-center gap-2 rounded-lg bg-teal-600 px-6 py-2.5 text-white font-semibold hover:bg-teal-700 transition-colors shadow-sm">
+      <button @click="showModal = true" class="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl bg-[#5A4FF3] px-6 py-3 text-white font-bold hover:bg-[#4F46E5] transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -106,7 +106,7 @@ const cancelAppointment = async (apt) => {
     <div class="relative mb-6">
       <input type="text" 
              placeholder="Search by doctor, diagnosis, treatment, or visit type..." 
-             class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pl-12 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 placeholder:text-slate-400">
+             class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pl-12 text-sm outline-none focus:border-[#5A4FF3] focus:ring-4 focus:ring-indigo-100/50 placeholder:text-slate-400 transition-all">
       <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-3.5 h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
       </svg>
@@ -118,8 +118,8 @@ const cancelAppointment = async (apt) => {
               :key="tab.id"
               @click="activeTab = tab.id"
               :class="activeTab === tab.id ? 'tab-active' : 'tab-inactive'"
-              class="pb-3 text-sm font-medium transition-colors relative whitespace-nowrap flex-shrink-0">
-        {{ tab.label }} <span :class="activeTab === tab.id ? 'text-teal-600' : 'text-slate-500'">({{ tab.count }})</span>
+              class="pb-3 text-sm font-bold transition-colors relative whitespace-nowrap flex-shrink-0">
+        {{ tab.label }} <span :class="activeTab === tab.id ? 'text-[#5A4FF3]' : 'text-slate-400'">({{ tab.count }})</span>
       </button>
     </div>
 
@@ -128,8 +128,8 @@ const cancelAppointment = async (apt) => {
       <!-- Upcoming -->
       <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <div class="flex items-center gap-4">
-          <div class="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="h-12 w-12 rounded-xl bg-indigo-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#5A4FF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
@@ -183,7 +183,7 @@ const cancelAppointment = async (apt) => {
         
         <!-- Top Section -->
         <div class="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
-          <div class="h-12 w-12 rounded-xl bg-teal-600 flex items-center justify-center flex-shrink-0 text-white">
+          <div class="h-12 w-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0 text-[#5A4FF3]">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
             </svg>
@@ -244,7 +244,7 @@ const cancelAppointment = async (apt) => {
 
         <!-- Buttons -->
         <div class="flex flex-col sm:flex-row gap-4">
-          <button @click="rescheduleAppointment(appointment)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
+          <button @click="rescheduleAppointment(appointment)" class="flex-1 bg-[#5A4FF3] hover:bg-[#4F46E5] text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 active:scale-95">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
@@ -271,14 +271,15 @@ const cancelAppointment = async (apt) => {
 
 <style scoped>
 .tab-active {
-  color: #0d9488; /* teal-600 */
-  border-bottom: 2px solid #0d9488;
+  color: #5A4FF3; /* BRAND_INDIGO */
+  border-bottom: 3px solid #5A4FF3;
 }
 .tab-inactive {
-  color: #64748b; /* slate-500 */
-  border-bottom: 2px solid transparent;
+  color: #94a3b8; /* slate-400 */
+  border-bottom: 3px solid transparent;
 }
 .tab-inactive:hover {
-  color: #0f172a; /* slate-900 */
+  color: #5A4FF3;
 }
 </style>
+

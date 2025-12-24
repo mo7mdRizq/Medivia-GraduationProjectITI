@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
+import { db } from '../../util/storage'
 import BaseButton from '../ui/BaseButton.vue'
 import { UserCircleIcon, ArrowRightOnRectangleIcon, Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 
@@ -14,15 +15,16 @@ onMounted(() => {
 })
 
 const checkLoginStatus = () => {
-    isLoggedIn.value = localStorage.getItem('isAuthenticated') === 'true'
+    isLoggedIn.value = db.get('isAuthenticated') === true
     if (isLoggedIn.value) {
-        userName.value = localStorage.getItem('userName') || 'User'
+        userName.value = db.get('userName') || 'User'
     }
 }
 
 const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated')
-    localStorage.removeItem('userName')
+    db.remove('isAuthenticated')
+    db.remove('userName')
+    db.remove('userRole')
     isLoggedIn.value = false
     isMobileMenuOpen.value = false
     router.push('/login')

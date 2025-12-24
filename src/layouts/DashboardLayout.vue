@@ -1,9 +1,17 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { db } from '../util/storage'
 
 const isSidebarOpen = ref(false)
 const route = useRoute()
+
+const router = useRouter()
+
+const handleLogout = () => {
+  db.clear()
+  router.push('/login')
+}
 
 // Close sidebar on route change (for mobile)
 watch(() => route.path, () => {
@@ -16,16 +24,16 @@ const toggleSidebar = () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-neutral-50 text-slate-900">
+  <div class="flex min-h-screen bg-neutral-50 text-gray-900">
      <!-- Mobile Header/Toggle -->
-    <div class="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-slate-200 p-4 z-40 flex items-center justify-between shadow-sm h-16">
+    <div class="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 p-4 z-40 flex items-center justify-between shadow-sm h-16">
       <div class="flex items-center gap-3">
-        <button @click="toggleSidebar" class="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+        <button @click="toggleSidebar" class="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span class="font-bold text-lg text-slate-900">HealthPortal</span>
+        <span class="font-bold text-lg text-gray-900">Patient Portal</span>
       </div>
       <div class="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
         J
@@ -33,23 +41,22 @@ const toggleSidebar = () => {
     </div>
 
     <!-- Sidebar Overlay for Mobile -->
-    <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"></div>
+    <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 bg-gray-900/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"></div>
 
     <!-- Sidebar -->
     <aside 
       :class="[
-        'fixed left-0 top-0 h-full w-64 bg-slate-900 text-white shadow-xl z-50 transition-transform duration-300 ease-in-out',
+        'fixed left-0 top-0 h-full w-64 bg-gray-800 text-white shadow-xl z-50 transition-transform duration-300 ease-in-out',
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
       <div class="flex h-full flex-col">
         <!-- Logo -->
-        <RouterLink to="/" class="flex items-center space-x-3 border-b border-slate-800 px-6 h-16 hover:bg-slate-800/50 transition-colors">
-          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-lg shadow-lg shadow-blue-900/50">HP</div>
-          <span class="text-xl font-bold tracking-tight">HealthPortal</span>
+        <RouterLink to="/" class="flex items-center space-x-3 border-b border-gray-700 px-6 h-16 hover:bg-gray-700/50 transition-colors pointer-events-auto">
+          <img src="/logo.png" alt="Medivia" class="h-10 w-auto" />
           
            <!-- Close button for mobile inside sidebar -->
-           <button @click.stop="isSidebarOpen = false" class="lg:hidden ml-auto text-slate-400 hover:text-white">
+           <button @click.stop="isSidebarOpen = false" class="lg:hidden ml-auto text-gray-400 hover:text-white">
              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
              </svg>
@@ -58,7 +65,7 @@ const toggleSidebar = () => {
 
         <!-- Navigation -->
         <nav class="flex-1 space-y-1 px-4 py-6 overflow-y-auto">
-          <RouterLink to="/dashboard" class="nav-item" active-class="nav-item-active" exact-active-class="exact-active-fix">
+          <RouterLink to="/dashboard" class="nav-item" active-class="nav-item-active" exact>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
@@ -110,12 +117,12 @@ const toggleSidebar = () => {
 
         <!-- Logout -->
         <div class="border-t border-slate-800 px-4 py-4">
-          <RouterLink to="/" class="nav-item text-slate-400 hover:bg-slate-800 hover:text-white">
+          <button @click="handleLogout" class="w-full nav-item text-slate-400 hover:bg-slate-800 hover:text-white">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             <span>Logout</span>
-          </RouterLink>
+          </button>
         </div>
       </div>
     </aside>
@@ -136,7 +143,7 @@ const toggleSidebar = () => {
   gap: 12px;
   padding: 12px 16px;
   border-radius: 12px;
-  color: #94a3b8;
+  color: #94a3b8; /* slate-400 */
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -149,10 +156,11 @@ const toggleSidebar = () => {
   color: #ffffff;
 }
 .nav-item-active {
-  background-color: #1e293b; /* slate-800 */
-  color: #60a5fa; /* blue-400 */
+  background-color: #2563eb; /* brand-500 */
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 .nav-item-active svg {
-  color: #60a5fa;
+  color: #ffffff;
 }
 </style>

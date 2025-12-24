@@ -6,6 +6,7 @@ import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import { EnvelopeIcon, ArrowLeftIcon, CheckBadgeIcon } from '@heroicons/vue/24/outline'
+import { db } from '../util/storage'
 
 const router = useRouter()
 const email = ref('')
@@ -33,8 +34,8 @@ const handleResetRequest = async () => {
     // Frontend-only simulation of email sending
     isLoading.value = true
     
-    // Store email in sessionStorage for the reset page
-    sessionStorage.setItem('resetPasswordEmail', email.value)
+    // Store email in the database for the reset page
+    db.set('resetPasswordEmail', email.value)
     
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1500))
@@ -60,6 +61,7 @@ const handleResetRequest = async () => {
     subtitle="Recovery."
     badgeText="Account Security"
     badgeColor="text-green-400"
+    hideLogo
     :badgeIcon="CheckBadgeIcon"
     tipTitle="Health Insight"
     tipText="'Start your day with a glass of water to boost hydration and energy, setting a positive tone for health.'"

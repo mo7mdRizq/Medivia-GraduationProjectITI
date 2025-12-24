@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
+import { db } from '../../util/storage'
 
 const router = useRouter()
 const isLoading = ref({
@@ -93,9 +94,9 @@ const handleSocialLogin = async (provider) => {
   })
   
   // Set Auth State
-  localStorage.setItem('isAuthenticated', 'true')
-  localStorage.setItem('userName', profile.name)
-  localStorage.setItem('userEmail', profile.email)
+  db.set('isAuthenticated', true)
+  db.set('userName', profile.name)
+  db.set('userEmail', profile.email)
   
   setTimeout(() => {
     router.push('/')

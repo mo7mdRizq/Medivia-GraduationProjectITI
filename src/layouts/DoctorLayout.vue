@@ -1,0 +1,160 @@
+<script setup>
+import { ref, watch } from 'vue'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { db } from '../util/storage'
+
+const isSidebarOpen = ref(false)
+const route = useRoute()
+
+const router = useRouter()
+
+const handleLogout = () => {
+  db.clear()
+  router.push('/login')
+}
+
+// Close sidebar on route change (for mobile)
+watch(() => route.path, () => {
+  isSidebarOpen.value = false
+})
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
+</script>
+
+<template>
+  <div class="flex min-h-screen bg-neutral-50 text-slate-900">
+     <!-- Mobile Header/Toggle -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-slate-200 p-4 z-40 flex items-center justify-between shadow-sm h-16">
+      <div class="flex items-center gap-3">
+        <button @click="toggleSidebar" class="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span class="font-bold text-lg text-slate-900">Doctor Portal</span>
+      </div>
+      <div class="h-8 w-8 bg-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+        D
+      </div>
+    </div>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- Sidebar -->
+    <aside 
+      :class="[
+        'fixed left-0 top-0 h-full w-64 bg-gray-800 text-white shadow-xl z-50 transition-transform duration-300 ease-in-out border-r border-gray-700',
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      ]"
+    >
+      <div class="flex h-full flex-col">
+        <!-- Logo -->
+        <RouterLink to="/" class="flex items-center space-x-3 border-b border-gray-700 px-6 h-16 hover:bg-gray-700/50 transition-colors">
+          <img src="/logo.png" alt="Medivia" class="h-10 w-auto" />
+          
+           <!-- Close button for mobile inside sidebar -->
+           <button @click.stop="isSidebarOpen = false" class="lg:hidden ml-auto text-teal-200 hover:text-white">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+             </svg>
+           </button>
+        </RouterLink>
+
+        <!-- Navigation -->
+        <nav class="flex-1 space-y-1 px-4 py-6 overflow-y-auto">
+          <RouterLink to="/doctor/dashboard" class="nav-item" active-class="nav-item-active" exact>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Dashboard</span>
+          </RouterLink>
+
+          <RouterLink to="/doctor/patients" class="nav-item" active-class="nav-item-active">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>My Patients</span>
+          </RouterLink>
+
+          <RouterLink to="/doctor/appointments" class="nav-item" active-class="nav-item-active">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Appointments</span>
+          </RouterLink>
+
+
+          <RouterLink to="/doctor/visits" class="nav-item" active-class="nav-item-active">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Visits</span>
+          </RouterLink>
+
+          <RouterLink to="/doctor/prescriptions" class="nav-item" active-class="nav-item-active">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span>Prescriptions</span>
+          </RouterLink>
+
+          <RouterLink to="/doctor/profile" class="nav-item" active-class="nav-item-active">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Profile</span>
+          </RouterLink>
+        </nav>
+
+        <!-- Logout -->
+        <div class="border-t border-gray-700 px-4 py-4">
+          <button @click="handleLogout" class="w-full nav-item text-gray-400 hover:bg-gray-700 hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 w-full lg:pl-64 transition-all duration-300">
+      <main class="px-4 py-6 lg:px-8 lg:py-8 pt-20 lg:pt-8">
+        <RouterView />
+      </main>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: #94a3b8; /* slate-400 */
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  position: relative;
+  margin-bottom: 4px;
+}
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+.nav-item-active {
+  background-color: #0d9488; /* brand-teal */
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
+}
+.nav-item-active svg {
+  color: #ffffff;
+}
+</style>

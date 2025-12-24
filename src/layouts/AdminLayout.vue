@@ -10,6 +10,7 @@ import {
   XMarkIcon,
   ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
+import { db } from '../util/storage'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,10 +25,7 @@ const navigation = [
 const currentRouteName = computed(() => route.name)
 
 const handleLogout = () => {
-  localStorage.removeItem('isAuthenticated')
-  localStorage.removeItem('userRole')
-  localStorage.removeItem('userName')
-  localStorage.removeItem('userEmail')
+  db.clear()
   router.push('/login')
 }
 </script>
@@ -44,32 +42,30 @@ const handleLogout = () => {
 
     <!-- Sidebar -->
     <aside 
-      class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out"
+      class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gray-800 border-r border-gray-700 flex flex-col transition-transform duration-300 ease-in-out text-white"
       :class="[
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
         'lg:translate-x-0 lg:transform-none'
       ]"
     >
       <!-- Logo App Section -->
-      <RouterLink to="/" class="px-6 py-6 border-b border-gray-100 flex items-center gap-3 hover:bg-gray-50 transition-colors">
-         <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-sm">
-            <ShieldCheckIcon class="w-6 h-6 text-white" />
-         </div>
-         <div>
-            <h1 class="font-bold text-gray-900 leading-tight">Admin Portal</h1>
-            <p class="text-xs text-gray-500">Healthcare System</p>
-         </div>
+      <RouterLink to="/" class="px-6 py-6 border-b border-gray-700 flex items-center gap-3 hover:bg-gray-700/50 transition-colors pointer-events-auto">
+          <img src="/logo.png" alt="Medivia" class="h-10 w-auto" />
+          <div class="ml-1">
+             <h1 class="font-bold text-white leading-tight">Admin Portal</h1>
+             <p class="text-xs text-slate-400">Healthcare System</p>
+          </div>
       </RouterLink>
 
       <!-- Admin Profile Badge -->
-      <div class="px-4 py-6">
-        <div class="bg-indigo-50 rounded-xl p-4 flex items-center gap-3 border border-indigo-100">
-           <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
+      <div class="px-4 py-6 text-white">
+        <div class="bg-indigo-900/50 rounded-xl p-4 flex items-center gap-3 border border-indigo-500/30">
+           <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-600/20">
              AM
            </div>
            <div>
-             <h3 class="font-bold text-gray-900 text-sm">Admin Manager</h3>
-             <p class="text-xs text-indigo-600 font-medium">System Administrator</p>
+             <h3 class="font-bold text-sm">Admin Manager</h3>
+             <p class="text-xs text-indigo-300 font-medium">System Administrator</p>
            </div>
         </div>
       </div>
@@ -81,11 +77,11 @@ const handleLogout = () => {
           :key="item.name"
           :to="item.href"
           @click="isMobileMenuOpen = false"
-          class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
+          class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group mb-1"
           :class="[
             route.path.startsWith(item.href)
-              ? 'bg-indigo-50 text-indigo-600 shadow-sm ring-1 ring-indigo-100'
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+              : 'text-gray-400 hover:bg-gray-700 hover:text-white'
           ]"
         >
           <component 
@@ -98,10 +94,10 @@ const handleLogout = () => {
       </nav>
 
       <!-- Logout (Bottom) -->
-      <div class="p-4 border-t border-gray-100">
+      <div class="p-4 border-t border-gray-700">
         <button 
           @click="handleLogout"
-          class="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+          class="flex items-center w-full px-4 py-3 text-sm font-medium text-gray-400 rounded-xl hover:bg-gray-700 hover:text-white transition-colors"
         >
           <ArrowRightOnRectangleIcon class="mr-3 h-5 w-5" />
           Sign Out
@@ -114,9 +110,7 @@ const handleLogout = () => {
       <!-- Mobile Header -->
       <div class="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm z-30">
          <div class="flex items-center gap-3">
-             <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <ShieldCheckIcon class="w-5 h-5 text-white" />
-             </div>
+             <img src="/logo.png" alt="Medivia" class="h-8 w-auto" />
              <span class="font-bold text-gray-900">Admin Portal</span>
          </div>
          <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">

@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref } from 'vue'
 
 const props = defineProps({
@@ -15,12 +15,25 @@ const steps = [
   { number: 4, label: 'Complete' }
 ]
 
-// Mocked file state to match the design
-const uploadedFile = ref({
-  name: '418a58e80158ad2e561a84744fcf4973.jpg',
-  size: '23.9 KB',
-  preview: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80' // Using a placeholder image similar to mock
-})
+// File handling
+const uploadedFile = ref(null)
+
+const handleFileUpload = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    uploadedFile.value = {
+      name: file.name,
+      size: (file.size / 1024).toFixed(1) + ' KB',
+      type: file.type,
+      preview: e.target.result,
+      file: file
+    }
+  }
+  reader.readAsDataURL(file)
+}
 
 // Review Form Data
 const extractedData = ref({
@@ -44,27 +57,159 @@ const closeModal = () => {
   }, 300)
 }
 
-const processFile = () => {
-  if (!uploadedFile.value) return
-  
-  // Move to AI Reading Step
-  currentStep.value = 2
-  
-  // Simulate AI Processing delay
-  setTimeout(() => {
-    // Mock extraction
-    extractedData.value = {
-      medication: 'Amoxicillin',
-      dosage: '500mg',
-      frequency: '3 times daily',
-      instructions: 'Take with food. Complete full course.',
-      doctor: 'Dr. Sarah Johnson'
+// Analysis state
+const isAnalyzing = ref(false)
+const analysisProgress = ref(0)
+const analysisStatus = ref('')
+
+// Helper to convert file to base64
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1]
+      resolve(base64)
     }
-    currentStep.value = 3
-  }, 2000)
+    reader.onerror = error => reject(error)
+  })
 }
 
+const analysisError = ref(null)
+
+const processFile = async () => {
+  if (!uploadedFile.value) return
+  
+  currentStep.value = 2
+  isAnalyzing.value = true
+  analysisProgress.value = 0
+  analysisError.value = null
+  
+  try {
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+    if (!apiKey || apiKey.includes('YOUR_API_KEY')) {
+      throw new Error('OpenAI API Key not configured in .env.local')
+    }
+
+    analysisStatus.value = 'Preparing prescription image...'
+    analysisProgress.value = 20
+    const base64Image = await fileToBase64(uploadedFile.value.file)
+    
+    analysisStatus.value = 'AI is reading the prescription...'
+    analysisProgress.value = 50
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are a medical assistant. You will analyze medical prescription images and extract specific details in JSON format only. If a detail is missing, use an empty string."
+          },
+          {
+            role: "user",
+            content: [
+              { 
+                type: "text", 
+                text: "Extract the following from this prescription: medication name, dosage, frequency, instructions, and doctor name. Format as JSON with keys: medication, dosage, frequency, instructions, doctor." 
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${uploadedFile.value.type};base64,${base64Image}`
+                }
+              }
+            ]
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 500
+      })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('OpenAI Error:', errorData)
+      throw new Error(errorData.error?.message || 'API request failed')
+    }
+
+    analysisProgress.value = 90
+    analysisStatus.value = 'Digitizing instructions...'
+    
+    const data = await response.json()
+    console.log('AI Response:', data)
+    
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('AI returned an empty response.')
+    }
+
+    const content = JSON.parse(data.choices[0].message.content)
+    console.log('Parsed Content:', content)
+    
+    extractedData.value = {
+      medication: content.medication || '',
+      dosage: content.dosage || '',
+      frequency: content.frequency || '',
+      instructions: content.instructions || '',
+      doctor: content.doctor || 'Dr. Sarah Johnson'
+    }
+
+    // Fallback check: if medication is still empty, let user know
+    if (!extractedData.value.medication) {
+      console.warn('Medication name was not found in the extraction.')
+    }
+
+    analysisProgress.value = 100
+    setTimeout(() => {
+      isAnalyzing.value = false
+      currentStep.value = 3
+    }, 500)
+
+  } catch (error) {
+    console.error('AI Analysis Error Detail:', error)
+    analysisError.value = error.message
+    isAnalyzing.value = false
+    analysisStatus.value = 'Failed: ' + error.message
+    
+    // Instead of resetting immediately, keep the error visible
+    // Wait longer so user can read it
+    setTimeout(() => {
+      if (analysisError.value) {
+        // Option to go back could be here
+      }
+    }, 6000)
+  }
+}
+
+// Validation state
+const validationError = ref(null)
+
 const savePrescription = () => {
+  validationError.value = null
+  
+  // Validate fields
+  if (!extractedData.value.medication.trim()) {
+    validationError.value = 'Medication name is required'
+    return
+  }
+  if (!extractedData.value.dosage.trim()) {
+    validationError.value = 'Dosage is required'
+    return
+  }
+  if (!extractedData.value.frequency.trim()) {
+    validationError.value = 'Frequency is required'
+    return
+  }
+  if (!extractedData.value.doctor.trim()) {
+    validationError.value = 'Doctor name is required'
+    return
+  }
+
   // Simulate saving
   const newPrescription = {
     id: Date.now(),
@@ -95,7 +240,7 @@ const savePrescription = () => {
     <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
       
       <!-- Header -->
-      <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white text-center relative">
+      <div class="bg-gradient-to-r from-[#5A4FF3] to-[#8B5CF6] p-6 text-white text-center relative">
         <button @click="closeModal" class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -114,15 +259,15 @@ const savePrescription = () => {
           <template v-for="(step, index) in steps" :key="step.number">
             <!-- Step Item -->
             <div class="flex items-center gap-2">
-              <div :class="currentStep >= step.number ? 'bg-white text-blue-600' : 'bg-blue-400 text-blue-100'" 
+              <div :class="currentStep >= step.number ? 'bg-white text-indigo-600' : 'bg-indigo-400 text-indigo-100'" 
                    class="h-5 w-5 rounded-full flex items-center justify-center font-bold text-[10px] transition-colors duration-300">
-                <span v-if="currentStep > step.number">✓</span>
+                <span v-if="currentStep > step.number">Γ£ô</span>
                 <span v-else>{{ step.number }}</span>
               </div>
-              <span :class="currentStep >= step.number ? 'text-white' : 'text-blue-200'" class="transition-colors duration-300">{{ step.label }}</span>
+              <span :class="currentStep >= step.number ? 'text-white' : 'text-indigo-200'" class="transition-colors duration-300">{{ step.label }}</span>
             </div>
             <!-- Connector Line -->
-            <div v-if="index < steps.length - 1" class="w-4 h-0.5 bg-blue-400/50"></div>
+            <div v-if="index < steps.length - 1" class="w-4 h-0.5 bg-indigo-400/50"></div>
           </template>
         </div>
       </div>
@@ -152,9 +297,10 @@ const savePrescription = () => {
           </div>
 
           <!-- Empty Upload State -->
-          <div v-else class="border-2 border-dashed border-slate-200 rounded-xl p-8 mb-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer ring-offset-2 focus-within:ring-2 focus-within:ring-blue-500"
-               @click="uploadedFile = { name: 'demo_script.jpg', size: '1.2 MB', preview: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=80' }">
-             <div class="h-12 w-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3">
+          <div v-else class="border-2 border-dashed border-slate-200 rounded-xl p-8 mb-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer ring-offset-2 focus-within:ring-2 focus-within:ring-indigo-500"
+               @click="$refs.fileInput.click()">
+             <input type="file" ref="fileInput" class="hidden" accept="image/png, image/jpeg, image/jpg, application/pdf" @change="handleFileUpload">
+             <div class="h-12 w-12 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-3">
                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                </svg>
@@ -164,15 +310,15 @@ const savePrescription = () => {
           </div>
 
           <!-- Info Box -->
-          <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
+          <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex gap-3">
             <div class="flex-shrink-0 mt-0.5">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#5A4FF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div>
-              <h4 class="text-sm font-semibold text-blue-900 mb-1">Ready to analyze:</h4>
-              <p class="text-xs text-blue-700 leading-relaxed">
+              <h4 class="text-sm font-semibold text-indigo-900 mb-1">Ready to analyze:</h4>
+              <p class="text-xs text-indigo-700 leading-relaxed">
                 Our AI will extract medication name, dosage, frequency, and instructions. You'll be able to review and edit the extracted information before saving.
               </p>
             </div>
@@ -181,17 +327,22 @@ const savePrescription = () => {
 
         <!-- Step 2: AI Reading -->
         <div v-if="currentStep === 2" class="flex flex-col items-center justify-center py-12">
-           <div class="relative h-24 w-24 mb-6">
-             <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
-             <div class="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
-             <div class="absolute inset-0 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-             </div>
-           </div>
-           <h3 class="text-lg font-semibold text-slate-900 mb-2">Analyzing Prescription...</h3>
-           <p class="text-sm text-slate-500 text-center max-w-xs">Connecting to Neural Engine processing nodes. Extracting text and validating medical entities.</p>
+            <!-- Progress Circle -->
+            <div class="relative h-28 w-28 mb-6">
+              <svg class="h-full w-full -rotate-90 text-slate-100" viewBox="0 0 36 36">
+                <!-- Background Circle -->
+                <path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+                <!-- Progress Circle -->
+                <path class="text-indigo-500 transition-all duration-300 ease-out" :stroke-dasharray="`${analysisProgress}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+              </svg>
+              <!-- Percentage Text -->
+              <div class="absolute inset-0 flex items-center justify-center flex-col">
+                <span class="text-xl font-bold text-blue-600">{{ analysisProgress }}%</span>
+              </div>
+            </div>
+            
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ analysisStatus }}</h3>
+            <p class="text-sm text-slate-500 text-center max-w-xs">Connecting to Neural Engine processing nodes. Extracting text and validating medical entities.</p>
         </div>
 
         <!-- Step 3: Review -->
@@ -204,23 +355,31 @@ const savePrescription = () => {
           <div class="space-y-4">
              <div>
                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Medication Name</label>
-               <input v-model="extractedData.medication" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none">
+               <input v-model="extractedData.medication" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none">
              </div>
              
              <div class="grid grid-cols-2 gap-4">
                <div>
                  <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Dosage</label>
-                 <input v-model="extractedData.dosage" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none">
+                 <input v-model="extractedData.dosage" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none">
                </div>
                <div>
                   <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Frequency</label>
-                 <input v-model="extractedData.frequency" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none">
+                 <input v-model="extractedData.frequency" type="text" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none">
                </div>
              </div>
 
              <div>
                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Instructions</label>
-               <textarea v-model="extractedData.instructions" rows="3" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"></textarea>
+               <textarea v-model="extractedData.instructions" rows="3" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"></textarea>
+             </div>
+
+             <!-- Validation Error -->
+             <div v-if="validationError" class="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm mt-4">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+               </svg>
+               {{ validationError }}
              </div>
           </div>
         </div>
@@ -245,7 +404,7 @@ const savePrescription = () => {
           <button @click="closeModal" class="flex-1 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors">
             Cancel
           </button>
-          <button @click="processFile" :disabled="!uploadedFile" :class="!uploadedFile ? 'opacity-50 cursor-not-allowed' : 'hover:bg-teal-600 shadow-teal-500/20'" class="flex-1 py-2.5 rounded-lg bg-teal-500 text-white font-semibold text-sm transition-colors shadow-lg flex items-center justify-center gap-2">
+          <button @click="processFile" :disabled="!uploadedFile" :class="!uploadedFile ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#4F46E5] shadow-indigo-500/20'" class="flex-1 py-2.5 rounded-lg bg-[#5A4FF3] text-white font-semibold text-sm transition-colors shadow-lg flex items-center justify-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
             </svg>
@@ -263,7 +422,7 @@ const savePrescription = () => {
           <button @click="currentStep = 1" class="flex-1 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors">
             Back
           </button>
-          <button @click="savePrescription" class="flex-1 py-2.5 rounded-lg bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20">
+          <button @click="savePrescription" class="flex-1 py-2.5 rounded-lg bg-[#5A4FF3] text-white font-semibold text-sm hover:bg-[#4F46E5] transition-colors shadow-lg shadow-indigo-500/20">
             Confirm & Save
           </button>
         </template>

@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref } from 'vue'
 
 const props = defineProps({
@@ -58,22 +58,22 @@ const handleSubmit = () => {
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" @click="closeModal"></div>
     
     <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-      <div class="bg-teal-600 p-6 text-white text-center">
+      <div class="bg-[#5A4FF3] p-6 text-white text-center">
         <h2 class="text-xl font-bold">Book New Appointment</h2>
-        <p class="text-teal-100 text-sm mt-1">Schedule a visit with your healthcare provider</p>
+        <p class="text-indigo-100 text-sm mt-1">Schedule a visit with your healthcare provider</p>
       </div>
 
       <div class="p-6 overflow-y-auto space-y-4">
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-1">Appointment Type</label>
-          <select v-model="formData.type" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 bg-white">
+          <select v-model="formData.type" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#5A4FF3] focus:ring-2 focus:ring-indigo-100 bg-white">
             <option v-for="type in types" :key="type">{{ type }}</option>
           </select>
         </div>
 
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-1">Select Doctor</label>
-          <select v-model="formData.doctor" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 bg-white">
+          <select v-model="formData.doctor" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#5A4FF3] focus:ring-2 focus:ring-indigo-100 bg-white">
             <option v-for="doc in doctors" :key="doc">{{ doc }}</option>
           </select>
         </div>
@@ -81,17 +81,17 @@ const handleSubmit = () => {
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">Date</label>
-            <input v-model="formData.date" type="date" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+            <input v-model="formData.date" type="date" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#5A4FF3] focus:ring-2 focus:ring-indigo-100">
           </div>
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">Time</label>
-            <input v-model="formData.time" type="time" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100">
+            <input v-model="formData.time" type="time" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#5A4FF3] focus:ring-2 focus:ring-indigo-100">
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-1">Reason / Notes</label>
-          <textarea v-model="formData.notes" rows="3" placeholder="Briefly describe the reason for your visit..." class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100"></textarea>
+          <textarea v-model="formData.notes" rows="3" placeholder="Briefly describe the reason for your visit..." class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#5A4FF3] focus:ring-2 focus:ring-indigo-100"></textarea>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ const handleSubmit = () => {
         <button @click="closeModal" class="flex-1 py-3 rounded-lg border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors">
           Cancel
         </button>
-        <button @click="handleSubmit" class="flex-1 py-3 rounded-lg bg-teal-600 text-white font-semibold text-sm hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20">
+        <button @click="handleSubmit" class="flex-1 py-3 rounded-lg bg-[#5A4FF3] text-white font-semibold text-sm hover:bg-[#4F46E5] transition-colors shadow-lg shadow-indigo-600/20">
           Confirm Booking
         </button>
       </div>

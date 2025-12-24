@@ -1,8 +1,8 @@
-<script setup>
+﻿<script setup>
 import { ref, computed } from 'vue'
-import AddMedicalHistoryModal from '../components/AddMedicalHistoryModal.vue'
+import AddMedicalHistoryModal from '../../components/AddMedicalHistoryModal.vue'
 import Swal from 'sweetalert2'
-import { generatePDF } from '../utils/pdfGenerator'
+import { generatePDF } from '../../utils/pdfGenerator'
 
 const showModal = ref(false)
 

@@ -15,7 +15,11 @@ defineProps({
   },
   badgeIcon: Object, // Component for the badge icon
   tipTitle: String,
-  tipText: String
+  tipText: String,
+  hideLogo: {
+    type: Boolean,
+    default: false
+  }
 })
 </script>
 
@@ -83,7 +87,7 @@ defineProps({
     <div class="w-full lg:w-1/2 bg-white flex flex-col justify-center items-center p-6 sm:p-12 relative">
       <div class="w-full max-w-[420px]">
         <!-- Logo -->
-        <div class="mb-10 flex items-center gap-3">
+        <div v-if="!hideLogo" class="mb-10 flex items-center gap-3">
           <RouterLink to="/" class="cursor-pointer">
             <img src="/logo.png" alt="Medivia Logo" class="h-10 w-auto hover:opacity-80 transition-opacity" />
           </RouterLink>

@@ -8,10 +8,14 @@ export default {
     extend: {
       colors: {
         brand: {
-          500: '#2563EB', // Adjust based on exact color picker if needed
+          50: '#F0F9FF',
+          100: '#E0F2FE',
+          500: '#2563EB', // Core Blue
           600: '#1D4ED8',
-          blue: '#1C7ED6', // From patient-screens
-          dark: '#0C4A6E'  // From patient-screens
+          700: '#1E40AF',
+          blue: '#1C7ED6',
+          teal: '#0D9488', // Doctor Accent
+          indigo: '#4F46E5' // Admin Accent
         },
         neutral: {
           50: '#F8FAFC',
@@ -22,7 +26,8 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif']
       },
       boxShadow: {
-        card: '0 14px 45px rgba(17, 24, 39, 0.08)'
+        card: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        premium: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
       }
     },
   },
