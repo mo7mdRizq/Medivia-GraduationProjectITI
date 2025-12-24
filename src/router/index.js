@@ -40,6 +40,12 @@ const router = createRouter({
             component: () => import('../views/ResetPasswordView.vue'),
             meta: { title: 'Reset Password - Medivia' }
         },
+        {
+            path: '/select-role',
+            name: 'select-role',
+            component: () => import('../views/RoleSelectionView.vue'),
+            meta: { title: 'Select Your Role - Medivia', requiresAuth: true }
+        },
         // Admin Routes
         {
             path: '/admin',
@@ -127,18 +133,46 @@ router.beforeEach((to, from, next) => {
 
     // Check authentication for protected routes
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+    const userRole = localStorage.getItem('userRole')
     const publicRoutes = ['landing', 'login', 'register', 'forgot-password', 'reset-password']
 
-    // If route requires auth and user is not authenticated, redirect to login
-    if (!publicRoutes.includes(to.name) && !isAuthenticated && to.path.startsWith('/admin')) {
-        // Only strictly check admin for now based on current logic, or apply to everything not public
-        // Based on code reading, it seems to want to protect everything not public.
-        // However, dashboard routes might not be in public list.
-        // Let's safe guard:
-        next({ name: 'login' })
-    } else {
-        next()
+    // If user is not authenticated and trying to access protected route
+    if (!publicRoutes.includes(to.name) && !isAuthenticated) {
+        return next({ name: 'login' })
     }
+
+    // If user is authenticated but hasn't selected a role yet
+    if (isAuthenticated && !userRole && to.name !== 'select-role' && !publicRoutes.includes(to.name)) {
+        return next({ name: 'select-role' })
+    }
+
+    // If user already selected a role and tries to go to role selection, redirect to appropriate dashboard
+    if (to.name === 'select-role' && userRole) {
+        if (userRole === 'admin') {
+            return next({ name: 'admin-dashboard' })
+        } else if (userRole === 'patient') {
+            return next({ path: '/dashboard' })
+        } else if (userRole === 'doctor') {
+            return next({ path: '/doctor/dashboard' })
+        }
+    }
+
+    // Role-based access control for admin routes
+    if (to.path.startsWith('/admin') && userRole !== 'admin') {
+        return next({ name: 'login' })
+    }
+
+    // Role-based access control for patient routes
+    if (to.path.startsWith('/dashboard') && userRole !== 'patient' && userRole !== 'admin') {
+        return next({ name: 'select-role' })
+    }
+
+    // Role-based access control for doctor routes
+    if (to.path.startsWith('/doctor') && userRole !== 'doctor' && userRole !== 'admin') {
+        return next({ name: 'select-role' })
+    }
+
+    next()
 })
 
 export default router

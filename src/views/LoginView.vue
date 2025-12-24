@@ -72,7 +72,7 @@ const handleLogin = () => {
     
     // Store auth state for User
     localStorage.setItem('isAuthenticated', 'true')
-    localStorage.setItem('userRole', 'user') // added for consistency
+    localStorage.removeItem('userRole') // Clear any previous role selection
     localStorage.setItem('userEmail', email.value)
     localStorage.setItem('userName', user.fullName)
     
@@ -80,9 +80,9 @@ const handleLogin = () => {
         transition: toast.TRANSITIONS.ZOOM,
     })
     
-    // Slight delay to see the toast before redirect
+    // Redirect to role selection
     setTimeout(() => {
-        router.push('/')
+        router.push('/select-role')
     }, 500)
   }
 }
