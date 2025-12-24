@@ -99,8 +99,8 @@ const steps = [
         </div>
       </section>
 
-      <!-- Key Features Section -->
-      <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <!-- Features Section -->
+      <section id="features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="text-center mb-16">
           <span class="text-brand-600 font-semibold border-b-2 border-brand-200 pb-1">Key Features</span>
           <h2 class="mt-4 text-3xl font-bold text-gray-900 sm:text-4xl">Everything you need to manage your health</h2>
@@ -128,7 +128,7 @@ const steps = [
       </section>
 
       <!-- How It Works Section -->
-      <section class="bg-brand-500 py-20 text-white relative overflow-hidden">
+      <section id="how-it-works" class="bg-brand-500 py-20 text-white relative overflow-hidden">
          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="text-center mb-16">
                <h2 class="text-3xl font-bold sm:text-4xl">How Medivia Works</h2>
@@ -153,7 +153,7 @@ const steps = [
       </section>
 
       <!-- Testimonials Section -->
-      <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-slate-50">
+      <section id="testimonials" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-slate-50">
         <div class="text-center mb-16">
            <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Trusted by Patients and Doctors</h2>
         </div>

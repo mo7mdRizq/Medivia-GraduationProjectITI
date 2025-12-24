@@ -3,11 +3,11 @@ import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <RouterView v-slot="{ Component }">
+  <router-view v-slot="{ Component }">
     <transition name="fade" mode="out-in">
       <component :is="Component" />
     </transition>
-  </RouterView>
+  </router-view>
 </template>
 
 <style>
@@ -20,4 +20,5 @@ import { RouterView } from 'vue-router'
 .fade-leave-to {
   opacity: 0;
 }
+/* Global styles if needed, mostly handled by Tailwind */
 </style>

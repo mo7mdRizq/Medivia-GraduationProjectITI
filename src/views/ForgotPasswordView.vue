@@ -5,19 +5,25 @@ import { toast } from 'vue3-toastify'
 import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
-import { EnvelopeIcon, ArrowLeftIcon, CheckBadgeIcon } from '@heroicons/vue/24/outline'
+import { authApi } from '../api/mockAuth'
+import emailjs from '@emailjs/browser'
 
 const router = useRouter()
 const email = ref('')
+const isLoading = ref(false)
 const errors = ref({})
+
 
 const validate = () => {
   errors.value = {}
   
+  // Strict Email Regex: Name + Numbers before @, .com end
+  const emailRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+@[a-zA-Z]+\.com$/
+
   if (!email.value) {
     errors.value.email = 'Email address is required'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = 'Please enter a valid email address'
+  } else if (!emailRegex.test(email.value)) {
+    errors.value.email = 'Email must contain letters AND numbers before @, and end in .com'
   }
 
   const isValid = Object.keys(errors.value).length === 0
@@ -27,18 +33,28 @@ const validate = () => {
   return isValid
 }
 
-const handleResetRequest = () => {
+const handleResetRequest = async () => {
   if (validate()) {
-    // Generate the reset link (pointing to the local reset-password route)
-    const resetLink = `${window.location.origin}/reset-password`
-    const subject = "Password Reset Request"
-    const body = `Click the following link to reset your password: ${resetLink}`
+    // Frontend-only simulation of email sending
+    isLoading.value = true
     
-    // trigger default mail client to send the email
-    window.location.href = `mailto:${email.value}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    // Store email in sessionStorage for the reset page
+    sessionStorage.setItem('resetPasswordEmail', email.value)
     
-    // Show feedback on UI via Toast
-    toast.info(`Email client opened for ${email.value}. Please send the email.`)
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    isLoading.value = false
+    
+    // Show success notification
+    toast.success(`Password reset link sent to ${email.value}`, {
+      autoClose: 3000,
+    })
+    
+    // Redirect to reset password page after short delay
+    setTimeout(() => {
+      router.push('/reset-password')
+    }, 1000)
   }
 }
 </script>
@@ -71,7 +87,16 @@ const handleResetRequest = () => {
           :error="errors.email"
         />
 
-        <BaseButton block type="submit">Send reset link</BaseButton>
+        <BaseButton block type="submit" :disabled="isLoading">
+          <span v-if="isLoading" class="flex items-center justify-center">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Processing...
+          </span>
+          <span v-else>Send reset link</span>
+        </BaseButton>
       </form>
 
       <div class="mt-8 text-center">

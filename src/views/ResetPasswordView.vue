@@ -18,10 +18,19 @@ const errors = ref({})
 const validate = () => {
   errors.value = {}
   
+  // Password: Must have uppercase, lowercase, number, symbol, min 8 chars
   if (!password.value) {
     errors.value.password = 'Password is required'
   } else if (password.value.length < 8) {
     errors.value.password = 'Password must be at least 8 characters'
+  } else if (!/[A-Z]/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one uppercase letter'
+  } else if (!/[a-z]/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one lowercase letter'
+  } else if (!/\d/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one number'
+  } else if (!/[!@#$%^&*]/.test(password.value)) {
+    errors.value.password = 'Password must contain at least one symbol (!@#$%^&*)'
   }
 
   if (!confirmPassword.value) {
@@ -39,8 +48,32 @@ const validate = () => {
 
 const handleResetPassword = () => {
   if (validate()) {
-    // Simulate API call
-    console.log('Resetting password...')
+    // Get the email from session storage (set in ForgotPasswordView)
+    const resetEmail = sessionStorage.getItem('resetPasswordEmail')
+    
+    if (!resetEmail) {
+      toast.error('Reset session expired. Please request a new password reset link.')
+      router.push('/forgot-password')
+      return
+    }
+    
+    // Update the user's password in localStorage
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const userIndex = users.findIndex(u => u.email === resetEmail)
+    
+    if (userIndex === -1) {
+      toast.error('User not found. Please sign up.')
+      router.push('/register')
+      return
+    }
+    
+    // Update the password
+    users[userIndex].password = password.value
+    localStorage.setItem('registeredUsers', JSON.stringify(users))
+    
+    // Clear the reset email from session
+    sessionStorage.removeItem('resetPasswordEmail')
+    
     toast.success('Password reset successfully!')
     setTimeout(() => {
       isSuccess.value = true

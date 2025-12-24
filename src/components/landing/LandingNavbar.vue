@@ -2,11 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import BaseButton from '../ui/BaseButton.vue'
-import { UserCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/vue/24/outline'
+import { UserCircleIcon, ArrowRightOnRectangleIcon, Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const isLoggedIn = ref(false)
 const userName = ref('')
+const isMobileMenuOpen = ref(false)
 
 onMounted(() => {
     checkLoginStatus()
@@ -23,15 +24,14 @@ const handleLogout = () => {
     localStorage.removeItem('isAuthenticated')
     localStorage.removeItem('userName')
     isLoggedIn.value = false
+    isMobileMenuOpen.value = false
     router.push('/login')
 }
 
 const navigation = [
-  { name: 'Home', href: '#' },
-  { name: 'Dashboard', href: '#' },
-  { name: 'Appointment', href: '#' },
-  { name: 'Visits', href: '#' },
-  { name: 'About', href: '#' },
+  { name: 'Features', href: '#features' },
+  { name: 'How it Works', href: '#how-it-works' },
+  { name: 'Reviews', href: '#testimonials' },
 ]
 </script>
 
@@ -62,7 +62,7 @@ const navigation = [
              <BaseButton variant="primary" class="h-10 px-6" @click="$router.push('/login')">Login</BaseButton>
           </div>
           
-          <div v-else class="flex items-center gap-3">
+          <div v-else class="hidden md:flex items-center gap-3">
              <div class="flex items-center gap-2 text-sm font-medium text-gray-700 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
                 <UserCircleIcon class="w-6 h-6 text-gray-500" />
                 <span>{{ userName }}</span>
@@ -72,9 +72,62 @@ const navigation = [
              </button>
           </div>
 
-          <!-- Mobile menu button placeholder -->
+          <!-- Mobile menu button -->
+          <button 
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
+            class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            <Bars3Icon v-if="!isMobileMenuOpen" class="h-6 w-6" />
+            <XMarkIcon v-else class="h-6 w-6" />
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- Mobile Menu -->
+    <Transition
+      enter-active-class="transition ease-out duration-200"
+      enter-from-class="opacity-0 -translate-y-1"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-1"
+    >
+      <div v-if="isMobileMenuOpen" class="md:hidden border-t border-gray-100 bg-white shadow-lg">
+        <div class="px-4 pt-2 pb-4 space-y-1">
+          <a 
+            v-for="item in navigation" 
+            :key="item.name" 
+            :href="item.href"
+            @click="isMobileMenuOpen = false"
+            class="block px-3 py-2 rounded-md text-base font-medium transition-colors"
+            :class="item.name === 'Home' ? 'text-brand-600 bg-brand-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'"
+          >
+            {{ item.name }}
+          </a>
+          
+          <div class="pt-4 border-t border-gray-100">
+            <div v-if="!isLoggedIn">
+              <BaseButton variant="primary" block class="mb-2" @click="$router.push('/login'); isMobileMenuOpen = false">
+                Login
+              </BaseButton>
+              <BaseButton variant="outline" block @click="$router.push('/register'); isMobileMenuOpen = false">
+                Sign Up
+              </BaseButton>
+            </div>
+            
+            <div v-else class="space-y-3">
+              <div class="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-md">
+                <UserCircleIcon class="w-8 h-8 text-gray-500" />
+                <span class="text-sm font-medium text-gray-900">{{ userName }}</span>
+              </div>
+              <BaseButton variant="outline" block @click="handleLogout" class="text-red-600 hover:text-red-700 hover:bg-red-50">
+                Logout
+              </BaseButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </nav>
 </template>
