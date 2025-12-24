@@ -8,17 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-<<<<<<< HEAD
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-=======
 .DS_Store
 dist
 dist-ssr
@@ -26,20 +15,16 @@ coverage
 *.local
 
 # Editor directories and files
-# .vscode/*
+.vscode/*
 !.vscode/extensions.json
 .idea
->>>>>>> edit-doctor
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-<<<<<<< HEAD
-=======
 
 *.tsbuildinfo
-
 .eslintcache
 
 # Cypress
@@ -48,4 +33,8 @@ coverage
 
 # Vitest
 __screenshots__/
->>>>>>> edit-doctor
+
+# Environment variables
+.env
+.env.local
+.env.*.local
