@@ -287,6 +287,7 @@
 
 <script setup>
 import { ref, computed, reactive } from 'vue';
+import { visits, addVisit } from '../stores/visitsStore';
 
 const searchQuery = ref('');
 const showLogVisitModal = ref(false);
@@ -334,7 +335,7 @@ const submitNewVisit = () => {
     const symptomsArray = newVisit.symptomsInput.split(',').map(s => s.trim()).filter(s => s);
 
     const visit = {
-        id: visits.value.length + 1,
+        id: Date.now(),
         patientName: newVisit.patientName,
         status: newVisit.status,
         date: formattedDate,
@@ -349,87 +350,9 @@ const submitNewVisit = () => {
         notes: newVisit.notes
     };
 
-    visits.value.unshift(visit); // Add to top of list
+    addVisit(visit);
     closeLogVisitModal();
 };
-
-const visits = ref([
-    {
-        id: 1,
-        patientName: 'Jessica Lee',
-        status: 'Completed',
-        date: 'Dec 7, 2025 at 2:30 PM',
-        type: 'Follow-up Consultation',
-        diagnosis: 'Upper Respiratory Infection',
-        diagnosisFull: 'Upper Respiratory Infection',
-        followUp: 'Dec 14, 2025',
-        expanded: true,
-        symptoms: ['Persistent cough', 'Mild fever', 'Fatigue'],
-        treatment: 'Prescribed Amoxicillin 500mg, rest, and fluids. Recommenced over-the-counter cough suppressant.',
-        prescription: 'Amoxicillin 500mg - 3x daily for 7 days',
-        notes: 'Patient reports symptoms started 3 days ago. No history of allergies. Advised to return if symptoms worsen.'
-    },
-    {
-        id: 2,
-        patientName: 'David Kim',
-        status: 'Completed',
-        date: 'Dec 7, 2025 at 11:00 AM',
-        type: 'Diabetes Management',
-        diagnosis: 'Type 2 Diabetes - Blood glucose not well controlled',
-        diagnosisFull: 'Type 2 Diabetes',
-        followUp: 'Jan 7, 2026',
-        expanded: false,
-        symptoms: ['Fatigue', 'Increased thirst'],
-        treatment: 'Adjusted insulin dosage, dietary consultation recommended.',
-        prescription: 'Metformin 500mg - 2x daily',
-        notes: 'Patient admits to recent poor diet adherence.'
-    },
-    {
-        id: 3,
-        patientName: 'Amanda White',
-        status: 'Completed',
-        date: 'Dec 6, 2025 at 9:00 AM',
-        type: 'Annual Physical',
-        diagnosis: 'Healthy - Annual physical examination normal',
-        diagnosisFull: 'Healthy',
-        followUp: 'Dec 2026',
-        expanded: false,
-        symptoms: [],
-        treatment: 'Routine vaccinations updated.',
-        prescription: 'None',
-        notes: 'Patient in good general health. Exercise 3x/week.'
-    },
-    {
-        id: 4,
-        patientName: 'James Taylor',
-        status: 'Completed',
-        date: 'Dec 6, 2025 at 3:00 PM',
-        type: 'Sick Visit',
-        diagnosis: 'Acute Bronchitis',
-        diagnosisFull: 'Acute Bronchitis',
-        followUp: 'Dec 13, 2025',
-        expanded: false,
-        symptoms: ['Cough', 'Shortness of breath'],
-        treatment: 'Inhaler prescribed, avoid irritants.',
-        prescription: 'Albuterol Inhaler',
-        notes: 'Wheezing heard on examination.'
-    },
-    {
-        id: 5,
-        patientName: 'Michael Brown',
-        status: 'In Progress',
-        date: 'Dec 5, 2025 at 10:30 AM',
-        type: 'Cardiology Consultation',
-        diagnosis: 'Hypertension with stress-related symptoms',
-        diagnosisFull: 'Hypertension',
-        followUp: 'Dec 19, 2025',
-        expanded: false,
-        symptoms: ['Headache', 'Dizziness'],
-        treatment: 'Pending lab results.',
-        prescription: 'Lisinopril 10mg',
-        notes: 'Monitoring BP over next 2 weeks.'
-    }
-]);
 
 const completedCount = computed(() => visits.value.filter(v => v.status === 'Completed').length);
 const inProgressCount = computed(() => visits.value.filter(v => v.status === 'In Progress').length);

@@ -50,7 +50,7 @@
         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">prescriptions</h3>
 
         <!-- Prescriptions List -->
-        <div class="space-y-4">
+        <div class="space-y-4" v-if="filteredPrescriptions.length > 0">
             <div v-for="prescription in filteredPrescriptions" :key="prescription.id" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden prescription-card">
                 <!-- Header / Trigger -->
                 <div @click="togglePrescription(prescription.id)"
@@ -184,6 +184,17 @@
             </div>
         </div>
 
+        <!-- Empty State -->
+        <div v-else class="text-center py-12 bg-white rounded-xl border border-gray-100 shadow-sm border-dashed">
+            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">No prescriptions found</h3>
+            <p class="text-gray-500 mt-1 max-w-sm mx-auto">Click "New Prescription" to create one.</p>
+        </div>
+
 
     <!-- New Prescription Modal -->
     <div v-if="showPrescriptionModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm" @click.self="closePrescriptionModal">
@@ -203,26 +214,32 @@
                         <!-- Patient Name -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Patient Name</label>
-                            <input v-model="newPrescription.patientName" type="text" required
+                            <input v-model="newPrescription.patientName" type="text" @input="validateRequired('patientName', newPrescription.patientName)" required
                                 class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.patientName}"
                                 placeholder="e.g. John Doe">
+                             <p v-if="errors.patientName" class="text-xs text-red-500 mt-1">{{ errors.patientName }}</p>
                         </div>
 
                         <!-- Patient Age -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Patient Age</label>
-                            <input v-model="newPrescription.patientAge" type="number" required
+                            <input v-model="newPrescription.patientAge" type="number" @input="validateAge('patientAge', newPrescription.patientAge)" required
                                 class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.patientAge}"
                                 placeholder="e.g. 45">
+                             <p v-if="errors.patientAge" class="text-xs text-red-500 mt-1">{{ errors.patientAge }}</p>
                         </div>
                     </div>
 
                     <!-- Diagnosis -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Diagnosis</label>
-                        <input v-model="newPrescription.diagnosis" type="text" required
+                        <input v-model="newPrescription.diagnosis" type="text" @input="validateRequired('diagnosis', newPrescription.diagnosis)" required
                             class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                            :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.diagnosis}"
                             placeholder="e.g. Hypertension">
+                        <p v-if="errors.diagnosis" class="text-xs text-red-500 mt-1">{{ errors.diagnosis }}</p>
                     </div>
 
                     <!-- Medications List -->
@@ -277,8 +294,10 @@
                         <!-- Expiration -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Expiration Date</label>
-                            <input v-model="newPrescription.dateExpires" type="date" required
-                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all">
+                            <input v-model="newPrescription.dateExpires" type="date" @input="validateRequired('dateExpires', newPrescription.dateExpires)" required
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.dateExpires}">
+                             <p v-if="errors.dateExpires" class="text-xs text-red-500 mt-1">{{ errors.dateExpires }}</p>
                         </div>
 
                         <!-- Refills -->
@@ -316,9 +335,12 @@
 
 <script setup>
 import { ref, computed, reactive } from 'vue';
+import { useValidation } from '../composables/useValidation';
+import { prescriptions, addPrescription } from '../stores/prescriptionsStore';
 
 const searchQuery = ref('');
 const showPrescriptionModal = ref(false);
+const { errors, validateRequired, validateAge, clearErrors } = useValidation();
 
 const newPrescription = reactive({
     patientName: '',
@@ -345,11 +367,13 @@ const openPrescriptionModal = () => {
             { name: '', dosage: '', frequency: '', duration: '', instructions: '' }
         ]
     });
+    clearErrors();
     showPrescriptionModal.value = true;
 };
 
 const closePrescriptionModal = () => {
     showPrescriptionModal.value = false;
+    clearErrors();
 };
 
 const addMedication = () => {
@@ -361,11 +385,26 @@ const removeMedication = (index) => {
 };
 
 const submitPrescription = () => {
+    // Validation
+    const isNameValid = validateRequired('patientName', newPrescription.patientName);
+    const isAgeValid = validateAge('patientAge', newPrescription.patientAge);
+    const isDiagnosisValid = validateRequired('diagnosis', newPrescription.diagnosis);
+    const isDateValid = validateRequired('dateExpires', newPrescription.dateExpires);
+
+    if (!isNameValid || !isAgeValid || !isDiagnosisValid || !isDateValid) return;
+
+    // Check at least one medication has a name
+    const hasMedication = newPrescription.medications.some(m => m.name.trim() !== '');
+    if (!hasMedication) {
+        alert('Please add at least one medication.'); // Fallback simple alert for array validation
+        return;
+    }
+
     const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const expires = new Date(newPrescription.dateExpires).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     const p = {
-        id: prescriptions.value.length + 1,
+        id: Date.now(),
         patientName: newPrescription.patientName,
         patientAge: newPrescription.patientAge,
         status: 'Active',
@@ -378,88 +417,9 @@ const submitPrescription = () => {
         medications: JSON.parse(JSON.stringify(newPrescription.medications)) // deep copy
     };
 
-    prescriptions.value.unshift(p);
+    addPrescription(p);
     closePrescriptionModal();
 };
-
-const prescriptions = ref([
-    {
-        id: 1,
-        patientName: 'John Martinez',
-        patientAge: 45,
-        status: 'Active',
-        dateIssued: 'Dec 5, 2025',
-        dateExpires: 'Mar 5, 2026',
-        diagnosis: 'Hypertension and Type 2 Diabetes',
-        refills: 2,
-        expanded: true,
-        pharmacyNotes: 'Patient prefers generic medications',
-        medications: [
-            { name: 'Lisinopril', dosage: '10mg', frequency: 'Once daily', duration: '90 days', instructions: 'Take in the morning with or without food' },
-            { name: 'Metformin', dosage: '500mg', frequency: 'Twice daily', duration: '90 days', instructions: 'Take with meals to reduce stomach upset' }
-        ]
-    },
-    {
-        id: 2,
-        patientName: 'Emily Johnson',
-        patientAge: 32,
-        status: 'Active',
-        dateIssued: 'Dec 4, 2025',
-        dateExpires: 'Jan 4, 2026',
-        diagnosis: 'Seasonal Allergies',
-        refills: 3,
-        expanded: false,
-        pharmacyNotes: 'None',
-        medications: [
-            { name: 'Cetirizine', dosage: '10mg', frequency: 'Once daily', duration: '30 days', instructions: 'Take in the evening' }
-        ]
-    },
-    {
-        id: 3,
-        patientName: 'Michael Brown',
-        patientAge: 58,
-        status: 'Active',
-        dateIssued: 'Dec 3, 2025',
-        dateExpires: 'Mar 3, 2026',
-        diagnosis: 'High Cholesterol',
-        refills: 2,
-        expanded: false,
-        pharmacyNotes: 'None',
-        medications: [
-            { name: 'Atorvastatin', dosage: '20mg', frequency: 'Once daily', duration: '90 days', instructions: 'Take in the evening' }
-        ]
-    },
-    {
-        id: 4,
-        patientName: 'Jessica Lee',
-        patientAge: 29,
-        status: 'Active',
-        dateIssued: 'Dec 7, 2025',
-        dateExpires: 'Dec 14, 2025',
-        diagnosis: 'Upper Respiratory Infection',
-        refills: 0,
-        expanded: false,
-        pharmacyNotes: 'Check for penicillin allergy - none reported',
-        medications: [
-            { name: 'Amoxicillin', dosage: '500mg', frequency: '3x daily', duration: '7 days', instructions: 'Finish all medication' }
-        ]
-    },
-    {
-        id: 5,
-        patientName: 'Robert Wilson',
-        patientAge: 67,
-        status: 'Expired',
-        dateIssued: 'Oct 15, 2025',
-        dateExpires: 'Jan 15, 2026', // Wait, Jan 2026 is future. "Expired" status in data is odd if date is future. I'll stick to data.
-        diagnosis: 'Cardiovascular Health Maintenance',
-        refills: 0,
-        expanded: false,
-        pharmacyNotes: 'None',
-        medications: [
-            { name: 'Aspirin', dosage: '81mg', frequency: 'Once daily', duration: '90 days', instructions: 'Take with food' }
-        ]
-    }
-]);
 
 const activeCount = computed(() => prescriptions.value.filter(p => p.status === 'Active').length);
 const expiredCount = computed(() => prescriptions.value.filter(p => p.status === 'Expired').length);

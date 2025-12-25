@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '../stores/userStore'
 import { 
   HomeIcon, 
   ClipboardDocumentListIcon, 
@@ -15,16 +16,21 @@ import {
 const isSidebarOpen = ref(false)
 const route = useRoute()
 const router = useRouter()
+const { currentUser, logout, loadFromStorage } = useUserStore()
+
+onMounted(() => {
+    loadFromStorage()
+})
 
 // Close sidebar on route change (for mobile)
 watch(() => route.path, () => {
   isSidebarOpen.value = false
 })
 
-const userRole = localStorage.getItem('userRole') || 'patient'
+const userRole = computed(() => currentUser.value.role)
 
 const navItems = computed(() => {
-  if (userRole === 'doctor') {
+  if (userRole.value === 'doctor') {
     return [
       { name: 'dashboard', routeName: 'doctor-dashboard-root', label: 'Dashboard', icon: HomeIcon },
       { name: 'patients', routeName: 'patients', label: 'Patients', icon: UsersIcon },
@@ -52,10 +58,7 @@ const toggleSidebar = () => {
 }
 
 const handleLogout = () => {
-  localStorage.removeItem('isAuthenticated')
-  localStorage.removeItem('userRole')
-  localStorage.removeItem('userEmail')
-  localStorage.removeItem('userName')
+  logout()
   router.push('/login')
 }
 </script>

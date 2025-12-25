@@ -1,78 +1,25 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useUserStore } from '../stores/userStore'
+import { usePatientProfileStore } from '../stores/patientProfileStore'
 
-const userEmail = localStorage.getItem('userEmail')
-const personalInfo = ref({
-  firstName: '',
-  lastName: '',
-  dob: '',
-  gender: '',
-  email: userEmail || '',
-  phone: '',
-  address: '',
-  city: '',
-  state: '',
-  zip: ''
-})
+const { currentUser, loadFromStorage } = useUserStore()
+loadFromStorage()
 
-const medicalInfo = ref({
-  bloodType: '',
-  allergies: [],
-  conditions: []
-})
-
-const emergencyContact = ref({
-  name: '',
-  relationship: '',
-  phone: '',
-  email: ''
-})
+const { 
+  personalInfo, 
+  medicalInfo, 
+  emergencyContact, 
+  loadProfile, 
+  saveProfile 
+} = usePatientProfileStore(currentUser.value.email)
 
 onMounted(() => {
-  if (!userEmail) return
-
-  // 1. Try to load from specific profile data
-  const savedProfile = localStorage.getItem(`profile_data_${userEmail}`)
-  if (savedProfile) {
-    const data = JSON.parse(savedProfile)
-    personalInfo.value = data.personalInfo || personalInfo.value
-    medicalInfo.value = data.medicalInfo || medicalInfo.value
-    emergencyContact.value = data.emergencyContact || emergencyContact.value
-  } else {
-    // 2. Fallback to registration data
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-    const user = users.find(u => u.email === userEmail)
-    if (user) {
-      const names = user.fullName.split(' ')
-      personalInfo.value.firstName = names[0] || ''
-      personalInfo.value.lastName = names.slice(1).join(' ') || ''
-      personalInfo.value.email = user.email
-      personalInfo.value.phone = user.phone || ''
-      personalInfo.value.dob = user.dob || ''
-      personalInfo.value.gender = user.gender || ''
-    }
-  }
+  loadProfile()
 })
 
 const saveProfileToLocal = () => {
-  if (!userEmail) return
-  const data = {
-    personalInfo: personalInfo.value,
-    medicalInfo: medicalInfo.value,
-    emergencyContact: emergencyContact.value
-  }
-  localStorage.setItem(`profile_data_${userEmail}`, JSON.stringify(data))
-  
-  // Also update registeredUsers if email/name changed for login consistency
-  const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-  const userIndex = users.findIndex(u => u.email === userEmail)
-  if (userIndex !== -1) {
-    users[userIndex].fullName = `${personalInfo.value.firstName} ${personalInfo.value.lastName}`.trim()
-    users[userIndex].phone = personalInfo.value.phone
-    users[userIndex].dob = personalInfo.value.dob
-    users[userIndex].gender = personalInfo.value.gender
-    localStorage.setItem('registeredUsers', JSON.stringify(users))
-  }
+  saveProfile()
 }
 
 // --- Edit States ---
