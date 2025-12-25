@@ -1,3 +1,4 @@
+<script setup>
 import { ref, computed } from 'vue'
 import { 
   MagnifyingGlassIcon, 
@@ -9,22 +10,22 @@ import {
   UserIcon,
   CalendarDaysIcon
 } from '@heroicons/vue/24/outline'
+import { appointments, upcomingCount, pendingCount, pastCount, totalAppointments, removeAppointment } from '../../stores/appointmentsStore'
 
-const stats = [
-  { name: 'Total Appointments', value: '12', bg: 'bg-white' },
-  { name: 'Pending Approval', value: '4', bg: 'bg-orange-50', color: 'text-orange-600' },
-  { name: 'Confirmed', value: '6', bg: 'bg-green-50', color: 'text-green-600' },
-  { name: 'Completed', value: '1', bg: 'bg-blue-50', color: 'text-blue-600' },
-]
+const stats = computed(() => [
+  { name: 'Total Appointments', value: totalAppointments.value, bg: 'bg-white' },
+  { name: 'Pending Approval', value: pendingCount.value, bg: 'bg-orange-50', color: 'text-orange-600' },
+  { name: 'Confirmed', value: upcomingCount.value, bg: 'bg-green-50', color: 'text-green-600' },
+  { name: 'Past/Completed', value: pastCount.value, bg: 'bg-blue-50', color: 'text-blue-600' },
+])
 
-const appointments = ref([])
 const searchQuery = ref('')
 
 const filteredAppointments = computed(() => {
   const q = searchQuery.value.toLowerCase()
   if (!q) return appointments.value
   return appointments.value.filter(a => 
-    a.patient.toLowerCase().includes(q) ||
+    a.patient?.toLowerCase().includes(q) ||
     a.doctor.toLowerCase().includes(q) ||
     a.type.toLowerCase().includes(q)
   )
@@ -33,6 +34,18 @@ const filteredAppointments = computed(() => {
 const toggleExpand = (id) => {
     const appt = appointments.value.find(a => a.id === id)
     if (appt) appt.expanded = !appt.expanded
+}
+
+const confirmAppointment = (id) => {
+    const appt = appointments.value.find(a => a.id === id)
+    if (appt) {
+        appt.status = 'Confirmed'
+        appt.category = 'upcoming'
+    }
+}
+
+const rejectAppointment = (id) => {
+    removeAppointment(id)
 }
 </script>
 
@@ -79,7 +92,7 @@ const toggleExpand = (id) => {
                  </div>
                  <div class="min-w-0">
                      <div class="flex items-center gap-3">
-                        <span class="font-bold text-gray-900 text-base">{{ appt.patient }}</span>
+                         <h4 class="font-bold text-gray-900 text-base">{{ appt.patient || appt.patientName || 'Anonymous Patient' }}</h4>
                         <span 
                           class="px-2.5 py-1 rounded-[6px] text-[11px] uppercase font-bold tracking-wide"
                           :class="{
@@ -105,10 +118,10 @@ const toggleExpand = (id) => {
              </div>
              
              <div class="flex items-center gap-3">
-                 <div v-if="appt.status === 'Pending'" class="flex gap-2 mr-6">
-                     <button class="p-2 bg-green-500 text-white rounded-[8px] hover:bg-green-600 shadow-sm transition-colors"><CheckCircleIcon class="w-6 h-6"/></button>
-                     <button class="p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 shadow-sm transition-colors"><XCircleIcon class="w-6 h-6"/></button>
-                 </div>
+                  <div v-if="appt.status === 'Pending'" class="flex gap-2 mr-6">
+                      <button @click.stop="confirmAppointment(appt.id)" class="p-2 bg-green-500 text-white rounded-[8px] hover:bg-green-600 shadow-sm transition-colors"><CheckCircleIcon class="w-6 h-6"/></button>
+                      <button @click.stop="rejectAppointment(appt.id)" class="p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 shadow-sm transition-colors"><XCircleIcon class="w-6 h-6"/></button>
+                  </div>
                  <button class="p-2 bg-blue-500 text-white rounded-[8px] hover:bg-blue-600 shadow-sm transition-colors"><PencilSquareIcon class="w-6 h-6"/></button>
                  <button class="p-1 rounded-full hover:bg-gray-100 transition-colors">
                      <ChevronUpIcon v-if="appt.expanded" class="w-6 h-6 text-gray-400" />
@@ -129,7 +142,7 @@ const toggleExpand = (id) => {
                      <div class="bg-indigo-50/30 rounded-[10px] p-5 space-y-4 border border-indigo-100/50">
                          <div>
                              <span class="block text-xs font-medium text-indigo-400 uppercase tracking-wider mb-1">Name</span>
-                             <span class="text-base font-semibold text-gray-900">{{ appt.patient }}</span>
+                              <span class="text-base font-semibold text-gray-900">{{ appt.patient || appt.patientName || 'Anonymous Patient' }}</span>
                          </div>
                          <div>
                              <span class="block text-xs font-medium text-indigo-400 uppercase tracking-wider mb-1">Phone</span>
@@ -180,15 +193,15 @@ const toggleExpand = (id) => {
 
              <!-- Action Bar -->
               <div class="mt-8 pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-4" v-if="appt.status === 'Pending'">
-                  <BaseButton class="bg-[#10B981] hover:bg-[#059669] text-white border-transparent w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-1 sm:order-none font-semibold text-sm transition-all duration-200">
+                  <button @click="confirmAppointment(appt.id)" class="bg-[#10B981] hover:bg-[#059669] text-white border-transparent w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-1 sm:order-none font-semibold text-sm transition-all duration-200">
                       <CheckCircleIcon class="w-5 h-5 mr-2" /> Approve Appointment
-                  </BaseButton>
-                  <BaseButton class="bg-[#EF4444] hover:bg-[#DC2626] text-white border-transparent w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-2 sm:order-none font-semibold text-sm transition-all duration-200">
-                      <XCircleIcon class="w-5 h-5 mr-2" /> Cancel Appointment
-                  </BaseButton>
-                   <BaseButton class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-3 sm:order-none font-semibold text-sm transition-all duration-200">
+                  </button>
+                  <button @click="rejectAppointment(appt.id)" class="bg-[#EF4444] hover:bg-[#DC2626] text-white border-transparent w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-2 sm:order-none font-semibold text-sm transition-all duration-200">
+                      <XCircleIcon class="w-5 h-5 mr-2" /> Reject Appointment
+                  </button>
+                   <button class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 w-full sm:w-auto h-12 px-6 rounded-[10px] flex items-center justify-center shadow-sm order-3 sm:order-none font-semibold text-sm transition-all duration-200">
                       <PencilSquareIcon class="w-5 h-5 mr-2"/> Edit Appointment
-                  </BaseButton>
+                  </button>
               </div>
              <div class="mt-8 pt-8 border-t border-gray-100 flex justify-center sm:justify-end w-full" v-else>
                   <BaseButton class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 h-11 px-6 rounded-[10px] flex items-center gap-2 font-medium text-sm transition-all duration-200">

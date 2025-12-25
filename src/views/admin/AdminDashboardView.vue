@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { 
   UsersIcon, 
   CalendarIcon, 
@@ -8,21 +9,28 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/vue/24/outline'
+import { appointments, pendingCount, upcomingCount, totalAppointments } from '../../stores/appointmentsStore'
+import { useDoctorsStore } from '../../stores/doctorsStore'
+import { patients } from '../../stores/patientsStore'
 
-const stats = [
-  { name: 'Total Patients', value: '378', change: '+33 this month', trend: '+9.6%', trendColor: 'text-green-500', icon: UsersIcon, iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
-  { name: 'Total Doctors', value: '24', change: '3 specialties', trend: '', trendColor: '', icon: UsersIcon, iconBg: 'bg-teal-50', iconColor: 'text-teal-600' },
-  { name: 'Appointments Today', value: '18', change: '5 pending approval', trend: '', trendColor: '', icon: CalendarIcon, iconBg: 'bg-purple-50', iconColor: 'text-purple-600' },
+const { doctors } = useDoctorsStore()
+
+const stats = computed(() => [
+  { name: 'Total Patients', value: patients.value.length.toString(), change: '+33 this month', trend: '+9.6%', trendColor: 'text-green-500', icon: UsersIcon, iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+  { name: 'Total Doctors', value: doctors.value.length.toString(), change: 'Registered specialties', trend: '', trendColor: '', icon: UsersIcon, iconBg: 'bg-teal-50', iconColor: 'text-teal-600' },
+  { name: 'Appointments Today', value: appointments.value.filter(a => a.date.includes('Dec 25')).length.toString(), change: `${pendingCount.value} pending approval`, trend: '', trendColor: '', icon: CalendarIcon, iconBg: 'bg-purple-50', iconColor: 'text-purple-600' },
   { name: 'System Health', value: '99.9%', change: 'All systems operational', trend: '+0.2%', trendColor: 'text-green-500', icon: ChartBarIcon, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
-]
+])
 
-const upcomingAppointments = [
-  { id: 1, patient: 'John Martinez', doctor: 'Dr. Sarah Chen', time: '9:00 AM', status: 'Confirmed' },
-  { id: 2, patient: 'Emily Johnson', doctor: 'Dr. Michael Rodriguez', time: '10:00 AM', status: 'Confirmed' },
-  { id: 3, patient: 'Michael Brown', doctor: 'Dr. Sarah Chen', time: '11:30 AM', status: 'Pending' },
-  { id: 4, patient: 'Sarah Davis', doctor: 'Dr. Lisa Wang', time: '2:00 PM', status: 'Confirmed' },
-  { id: 5, patient: 'Robert Wilson', doctor: 'Dr. Sarah Chen', time: '3:30 PM', status: 'Confirmed' },
-]
+const upcomingAppointments = computed(() => {
+    return appointments.value.slice(0, 5).map(a => ({
+        id: a.id,
+        patient: a.patient || a.patientName || 'Anonymous',
+        doctor: a.doctor,
+        time: a.time,
+        status: a.status
+    }))
+})
 
 const recentActivity = [
   { id: 1, title: 'New Patient', desc: 'Emily Johnson registered', time: '5 min ago', icon: UsersIcon, bg: 'bg-blue-100', color: 'text-blue-600' },

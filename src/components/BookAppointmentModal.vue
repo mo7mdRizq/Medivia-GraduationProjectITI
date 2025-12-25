@@ -1,5 +1,10 @@
+
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useDoctorsStore } from '../stores/doctorsStore'
+import { useUserStore } from '../stores/userStore'
+
+const { currentUser } = useUserStore()
 
 const props = defineProps({
   isOpen: Boolean
@@ -9,16 +14,15 @@ const emit = defineEmits(['close', 'book-appointment'])
 
 const formData = ref({
   type: 'General Consultation',
-  doctor: 'Dr. Sarah Johnson',
+  doctor: '',
   date: '',
   time: '',
   notes: ''
 })
 
-import { useDoctorsStore } from '../stores/doctorsStore'
-
-const { getDoctorOptions } = useDoctorsStore()
-const doctors = getDoctorOptions()
+// Reactive doctors list
+const { doctors } = useDoctorsStore()
+const doctorsOptions = computed(() => doctors.value.map(d => `${d.name} (${d.specialty})`))
 
 const types = [
   'General Consultation',
@@ -34,17 +38,33 @@ const closeModal = () => {
 }
 
 const handleSubmit = () => {
+  if (!formData.value.doctor) {
+    alert('Please select a doctor')
+    return
+  }
+  if (!formData.value.date || !formData.value.time) {
+    alert('Please select date and time')
+    return
+  }
+
+  const doctorPart = formData.value.doctor.split(' (')
+  const doctorName = doctorPart[0]
+  const specialty = doctorPart[1] ? doctorPart[1].replace(')', '') : 'General'
+
   const newAppointment = {
     id: Date.now(),
     type: formData.value.type,
     status: 'Pending',
-    doctor: formData.value.doctor.split(' (')[0],
-    specialty: formData.value.doctor.split(' (')[1].replace(')', ''),
+    doctor: doctorName,
+    specialty: specialty,
+    patient: currentUser.value.name,
+    patientName: currentUser.value.name, // for compatibility
+    email: currentUser.value.email, // patient email
     date: new Date(formData.value.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     time: formData.value.time,
     location: 'Main Medical Center',
     notes: formData.value.notes,
-    category: 'upcoming'
+    category: 'pending'
   }
   emit('book-appointment', newAppointment)
   closeModal()
@@ -72,7 +92,7 @@ const handleSubmit = () => {
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-1">Select Doctor</label>
           <select v-model="formData.doctor" class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-[#5A4FF3] focus:ring-2 focus:ring-indigo-100 bg-white">
-            <option v-for="doc in doctors" :key="doc">{{ doc }}</option>
+            <option v-for="doc in doctorsOptions" :key="doc">{{ doc }}</option>
           </select>
         </div>
 

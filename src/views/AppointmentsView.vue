@@ -1,3 +1,76 @@
+<script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { appointments, upcomingCount, pendingCount, pastCount, totalAppointments, removeAppointment } from '../stores/appointmentsStore'
+
+const router = useRouter()
+const searchQuery = ref('')
+const showRescheduleModal = ref(false)
+const selectedAppointment = ref(null)
+const newDate = ref('')
+const newTime = ref('')
+const rescheduleReason = ref('')
+
+// Use store computed values or derive local ones if needing specific logic
+const todaysAppointmentsCount = computed(() => {
+    // Assuming Dec 25, 2025 is "Today" or just matching some mock dates
+    return appointments.value.filter(a => a.date === 'Dec 25, 2025').length
+})
+
+const pendingApprovalCount = computed(() => pendingCount.value)
+const confirmedCount = computed(() => upcomingCount.value)
+
+const filteredAppointments = computed(() => {
+    if (!searchQuery.value) return appointments.value
+    const query = searchQuery.value.toLowerCase()
+    return appointments.value.filter(a => 
+        (a.patientName || a.patient || '').toLowerCase().includes(query) || 
+        a.type.toLowerCase().includes(query) ||
+        (a.notes || a.description || '').toLowerCase().includes(query)
+    )
+})
+
+const toggleAppointment = (id) => {
+    const appt = appointments.value.find(a => a.id === id)
+    if (appt) {
+        appt.expanded = !appt.expanded
+    }
+}
+
+const confirmAppointment = (id) => {
+    const appt = appointments.value.find(a => a.id === id)
+    if (appt) {
+        appt.status = 'Confirmed'
+        appt.category = 'upcoming'
+    }
+}
+
+const rejectAppointment = (id) => {
+    removeAppointment(id)
+}
+
+const openRescheduleModal = (appt) => {
+    selectedAppointment.value = appt
+    showRescheduleModal.value = true
+    newDate.value = ''
+    newTime.value = ''
+    rescheduleReason.value = ''
+}
+
+const closeRescheduleModal = () => {
+    showRescheduleModal.value = false
+    selectedAppointment.value = null
+}
+
+const submitReschedule = () => {
+    if (selectedAppointment.value && newDate.value && newTime.value) {
+        selectedAppointment.value.date = new Date(newDate.value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        selectedAppointment.value.time = newTime.value
+        closeRescheduleModal()
+    }
+}
+</script>
+
 <template>
   <div class="relative">
     <!-- Header -->
@@ -74,7 +147,7 @@
                         </div>
                         <div>
                             <div class="flex items-center space-x-2">
-                                <h4 class="font-bold text-gray-900 text-base">{{ appt.patientName }}</h4>
+                                <h4 class="font-bold text-gray-900 text-base">{{ appt.patientName || appt.patient || 'Anonymous Patient' }}</h4>
                                 <span v-if="appt.isUrgent" class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded flex items-center">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -106,7 +179,7 @@
                     </div>
                     <div class="flex items-center space-x-6">
                         <div class="text-right hidden md:block">
-                            <p class="font-medium text-gray-900 text-sm">{{ appt.shortDescription }}</p>
+                            <p class="font-medium text-gray-900 text-sm">{{ appt.shortDescription || appt.notes || 'No description' }}</p>
                             <div class="flex justify-end gap-2 mt-1">
                                 <span v-for="tag in appt.tags" :key="tag" class="bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-medium border border-red-100">
                                     {{ tag }}
@@ -145,7 +218,7 @@
                         <div class="bg-blue-50 bg-opacity-50 p-4 rounded-lg flex justify-between items-center">
                             <div>
                                 <p class="text-xs text-gray-500 mb-1">Name & Age</p>
-                                <p class="text-sm font-medium text-gray-900">{{ appt.patientName }}, {{ appt.patientAge }} years</p>
+                                <p class="text-sm font-medium text-gray-900">{{ appt.patientName || appt.patient || 'Anonymous Patient' }}, {{ appt.patientAge || 'N/A' }} years</p>
                             </div>
                             <div>
                                 <div class="flex items-center text-gray-600 text-xs mb-1">
@@ -204,9 +277,7 @@
                             <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>
                             <h5 class="text-sm font-semibold text-gray-900">Reason for Visit</h5>
                         </div>
-                        <div class="bg-purple-50 p-3 rounded-lg text-gray-700 ml-3.5 border border-purple-100 text-sm">
-                            {{ appt.description }}
-                        </div>
+                            {{ appt.description || appt.notes || 'No description provided.' }}
                     </div>
 
                     <div class="flex gap-4 mt-6">
@@ -312,82 +383,3 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue';
-
-const searchQuery = ref('');
-const showRescheduleModal = ref(false);
-const selectedAppointment = ref(null);
-const newDate = ref('');
-const newTime = ref('');
-const rescheduleReason = ref('');
-
-import { appointments, upcomingCount, pendingCount, pastCount, totalAppointments } from '../stores/appointmentsStore';
-
-// We want to use the shared state, but keeping `appointments` name for compatibility with existing template
-// Since `appointments` is already a ref in the store, we can use it directly.
-// However, the template expects `appointments` to be available.
-// The imports above are `ref`s so they can be used in script setup directly.
-
-
-// Use store computed values or derive local ones if needing specific logic
-const todaysAppointmentsCount = computed(() => {
-    // Assuming Dec 8, 2025 is "Today" for this mock data context
-    return appointments.value.filter(a => a.date === 'Dec 8, 2025').length;
-});
-
-const pendingApprovalCount = computed(() => appointments.value.filter(a => a.status === 'Pending').length);
-const confirmedCount = computed(() => appointments.value.filter(a => a.status === 'Confirmed').length);
-
-const filteredAppointments = computed(() => {
-    if (!searchQuery.value) return appointments.value;
-    const query = searchQuery.value.toLowerCase();
-    return appointments.value.filter(a => 
-        a.patientName.toLowerCase().includes(query) || 
-        a.type.toLowerCase().includes(query) ||
-        a.description.toLowerCase().includes(query)
-    );
-});
-
-const toggleAppointment = (id) => {
-    const appt = appointments.value.find(a => a.id === id);
-    if (appt) {
-        appt.expanded = !appt.expanded;
-    }
-};
-
-const confirmAppointment = (id) => {
-    const appt = appointments.value.find(a => a.id === id);
-    if (appt) {
-        appt.status = 'Confirmed';
-        // In a real app, emit event or call API
-    }
-};
-
-const rejectAppointment = (id) => {
-    appointments.value = appointments.value.filter(a => a.id !== id);
-    // In a real app, emit event or call API
-};
-
-const openRescheduleModal = (appt) => {
-    selectedAppointment.value = appt;
-    showRescheduleModal.value = true;
-    newDate.value = '';
-    newTime.value = '';
-    rescheduleReason.value = '';
-};
-
-const closeRescheduleModal = () => {
-    showRescheduleModal.value = false;
-    selectedAppointment.value = null;
-};
-
-const submitReschedule = () => {
-    if (selectedAppointment.value && newDate.value && newTime.value) {
-        // Mock update
-        selectedAppointment.value.date = newDate.value; // In real app format date properly
-        selectedAppointment.value.time = newTime.value; // In real app format time properly
-        closeRescheduleModal();
-    }
-};
-</script>

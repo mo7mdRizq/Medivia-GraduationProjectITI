@@ -51,7 +51,12 @@ const router = createRouter({
                     component: () => import('../views/admin/AdminDashboardView.vue'),
                     meta: { title: 'Dashboard - Medivia Admin' }
                 },
-                // ... other admin routes kept implicitly or explicitly if needed
+                {
+                    path: 'appointments',
+                    name: 'admin-appointments',
+                    component: () => import('../views/admin/AdminAppointmentsView.vue'),
+                    meta: { title: 'Appointments - Medivia Admin' }
+                },
             ]
         },
         // Patient Dashboard Routes

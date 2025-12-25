@@ -284,12 +284,10 @@ onMounted(() => {
 
 // Computed Data for Dashboard
 const todaysAppointments = computed(() => {
-    // For demo purposes, if no appointments exist, we might want to show empty or all. 
-    // But strictly dynamic: filter by today.
-    // Note: The date format in store/mock was 'Dec 8, 2025'. We need to be careful with date matching.
-    // For this refactor, we will just show ALL appointments for "Today's Appointments" widget as a "Upcoming" list if the date matching is too strict, 
-    // OR we can try to match. Let's just return the first 5 upcoming appointments to ensure data visibility if dates don't match exactly.
-    return appointments.value.slice(0, 5);
+    // Attempt to match today's date or just show first 5 if none match strictly
+    const todayStr = 'Dec 25, 2025'; // Mock today
+    const matches = appointments.value.filter(a => a.date === todayStr);
+    return matches.length > 0 ? matches : appointments.value.slice(0, 5);
 });
 
 const recentVisitsList = computed(() => {

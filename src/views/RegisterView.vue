@@ -6,10 +6,12 @@ import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import { useValidation } from '../composables/useValidation'
-import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, PhoneIcon, CalendarDaysIcon } from '@heroicons/vue/24/outline'
+import { useDoctorsStore } from '../stores/doctorsStore'
+import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, PhoneIcon, CalendarDaysIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const { errors, validateName, validateEmail, validatePhone, validateDOB, validateRequired, clearErrors } = useValidation()
+const { addDoctor } = useDoctorsStore()
 
 const fullName = ref('')
 const email = ref('')
@@ -17,6 +19,7 @@ const phone = ref('')
 const dob = ref('')
 const gender = ref('')
 const role = ref('')
+const specialty = ref('') // New field
 const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
@@ -29,6 +32,11 @@ watch(phone, (val) => validatePhone('phone', val))
 watch(dob, (val) => validateDOB('dob', val))
 watch(gender, (val) => validateRequired('gender', val, 'Gender'))
 watch(role, (val) => validateRequired('role', val, 'Account Type'))
+watch(specialty, (val) => {
+    if (role.value === 'doctor') {
+        validateRequired('specialty', val, 'Specialty')
+    }
+})
 
 const validate = () => {
   const isNameValid = validateName('fullName', fullName.value, 'Full Name')
@@ -37,6 +45,11 @@ const validate = () => {
   const isDobValid = validateDOB('dob', dob.value)
   const isGenderValid = validateRequired('gender', gender.value, 'Gender')
   const isRoleValid = validateRequired('role', role.value, 'Account Type')
+  
+  let isSpecialtyValid = true
+  if (role.value === 'doctor') {
+      isSpecialtyValid = validateRequired('specialty', specialty.value, 'Specialty')
+  }
 
   // Password local validation (as it has specific project requirements)
   let isPasswordValid = true
@@ -73,7 +86,7 @@ const validate = () => {
     delete errors.value.confirmPassword
   }
   
-  const isValid = isNameValid && isEmailValid && isPhoneValid && isDobValid && isGenderValid && isRoleValid && isPasswordValid && isConfirmValid
+  const isValid = isNameValid && isEmailValid && isPhoneValid && isDobValid && isGenderValid && isRoleValid && isPasswordValid && isConfirmValid && isSpecialtyValid
   
   if (!isValid) {
       const firstError = Object.values(errors.value)[0]
@@ -92,16 +105,28 @@ const handleRegister = () => {
       return
     }
     
-    users.push({
+    const newUser = {
       fullName: fullName.value,
       email: email.value,
       phone: phone.value,
       dob: dob.value,
       gender: gender.value,
       role: role.value,
+      specialty: specialty.value, // Added specialty
       password: password.value
-    })
+    }
+    
+    users.push(newUser)
     localStorage.setItem('registeredUsers', JSON.stringify(users))
+    
+    // If Doctor, add to Doctors Store for patient selection
+    if (role.value === 'doctor') {
+        addDoctor({
+            name: fullName.value,
+            specialty: specialty.value,
+            email: email.value
+        })
+    }
     
     // Clear session data to ensure a fresh start for the new user
     const keysToClear = [
@@ -232,6 +257,17 @@ const handleRegister = () => {
              </select>
           </div>
           <p v-if="errors.role" class="mt-1.5 text-sm text-red-600">{{ errors.role }}</p>
+        </div>
+
+        <div v-if="role === 'doctor'" class="mb-5 animate-fadeIn">
+            <BaseInput 
+              v-model="specialty"
+              label="Specialty"
+              placeholder="e.g. Cardiology, Pediatrics"
+              :icon="BriefcaseIcon"
+              :error="errors.specialty"
+            />
+          <p v-if="errors.specialty" class="mt-1.5 text-sm text-red-600">{{ errors.specialty }}</p>
         </div>
 
         <BaseButton block type="submit">Create Account</BaseButton>
