@@ -336,7 +336,8 @@
 <script setup>
 import { ref, computed, reactive } from 'vue';
 import { useValidation } from '../composables/useValidation';
-import { prescriptions, addPrescription } from '../stores/prescriptionsStore';
+import { usePrescriptionsStore } from '../stores/prescriptionsStore';
+const { prescriptions, addPrescription } = usePrescriptionsStore();
 
 const searchQuery = ref('');
 const showPrescriptionModal = ref(false);

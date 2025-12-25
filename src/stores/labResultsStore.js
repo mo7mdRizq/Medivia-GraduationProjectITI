@@ -22,16 +22,26 @@ const getStoredLabResults = () => {
     return stored ? JSON.parse(stored) : defaultLabResults
 }
 
-export const labResults = ref(getStoredLabResults())
+const labResults = ref(getStoredLabResults())
 
 watch(labResults, (newVal) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
 }, { deep: true })
 
-export const totalTests = computed(() => labResults.value.length)
-export const normalResultsCount = computed(() => labResults.value.filter(r => r.status === 'Normal').length)
-export const attentionResultsCount = computed(() => labResults.value.filter(r => r.status === 'Attention').length)
+export const useLabResultsStore = () => {
+    const totalTests = computed(() => labResults.value.length)
+    const normalResultsCount = computed(() => labResults.value.filter(r => r.status === 'Normal').length)
+    const attentionResultsCount = computed(() => labResults.value.filter(r => r.status === 'Attention').length)
 
-export const addLabResult = (newResult) => {
-    labResults.value.unshift(newResult)
+    const addLabResult = (newResult) => {
+        labResults.value.unshift(newResult)
+    }
+
+    return {
+        labResults,
+        totalTests,
+        normalResultsCount,
+        attentionResultsCount,
+        addLabResult
+    }
 }

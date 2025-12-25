@@ -8,20 +8,24 @@ const getStoredPatients = () => {
     return stored ? JSON.parse(stored) : []
 }
 
-// Shared patients state
-export const patients = ref(getStoredPatients())
+const patients = ref(getStoredPatients())
 
-// Watch for changes and save to localStorage
 watch(patients, (newVal) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
 }, { deep: true })
 
-// Helper function to add a new patient
-export const addPatient = (newPatient) => {
-    patients.value.unshift(newPatient)
-}
+export const usePatientsStore = () => {
+    const addPatient = (newPatient) => {
+        patients.value.unshift(newPatient)
+    }
 
-// Helper to remove patient
-export const removePatient = (id) => {
-    patients.value = patients.value.filter(p => p.id !== id)
+    const removePatient = (id) => {
+        patients.value = patients.value.filter(p => p.id !== id)
+    }
+
+    return {
+        patients,
+        addPatient,
+        removePatient
+    }
 }

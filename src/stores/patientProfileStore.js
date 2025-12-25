@@ -2,63 +2,69 @@ import { ref, watch } from 'vue'
 
 const STORAGE_KEY_PREFIX = 'medivia_patient_profile_'
 
-export const usePatientProfileStore = (email) => {
-    const STORAGE_KEY = STORAGE_KEY_PREFIX + (email || 'guest')
+const profiles = ref(new Map())
 
-    const personalInfo = ref({
-        firstName: '',
-        lastName: '',
-        dob: '',
-        gender: '',
-        email: email || '',
-        phone: '',
-        address: '',
-        city: '',
-        state: '',
-        zip: ''
-    })
+export const usePatientProfileStore = (email = 'guest') => {
+    const STORAGE_KEY = STORAGE_KEY_PREFIX + email
 
-    const medicalInfo = ref({
-        bloodType: '',
-        allergies: [],
-        conditions: []
-    })
+    if (!profiles.value.has(email)) {
+        profiles.value.set(email, {
+            personalInfo: ref({
+                firstName: '',
+                lastName: '',
+                dob: '',
+                gender: '',
+                email: email,
+                phone: '',
+                address: '',
+                city: '',
+                state: '',
+                zip: ''
+            }),
+            medicalInfo: ref({
+                bloodType: '',
+                allergies: [],
+                conditions: []
+            }),
+            emergencyContact: ref({
+                name: '',
+                relationship: '',
+                phone: '',
+                email: ''
+            })
+        })
+    }
 
-    const emergencyContact = ref({
-        name: '',
-        relationship: '',
-        phone: '',
-        email: ''
-    })
+    const profile = profiles.value.get(email)
 
     const loadProfile = () => {
         const stored = localStorage.getItem(STORAGE_KEY)
         if (stored) {
             const data = JSON.parse(stored)
-            personalInfo.value = { ...personalInfo.value, ...data.personalInfo }
-            medicalInfo.value = { ...medicalInfo.value, ...data.medicalInfo }
-            emergencyContact.value = { ...emergencyContact.value, ...data.emergencyContact }
+            profile.personalInfo.value = { ...profile.personalInfo.value, ...data.personalInfo }
+            profile.medicalInfo.value = { ...profile.medicalInfo.value, ...data.medicalInfo }
+            profile.emergencyContact.value = { ...profile.emergencyContact.value, ...data.emergencyContact }
         } else {
             // Fallback to registration data if available
             const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
             const user = users.find(u => u.email === email)
             if (user) {
                 const names = user.fullName.split(' ')
-                personalInfo.value.firstName = names[0] || ''
-                personalInfo.value.lastName = names.slice(1).join(' ') || ''
-                personalInfo.value.email = user.email
-                personalInfo.value.phone = user.phone || ''
-                personalInfo.value.dob = user.dob || ''
-                personalInfo.value.gender = user.gender || ''
+                profile.personalInfo.value.firstName = names[0] || ''
+                profile.personalInfo.value.lastName = names.slice(1).join(' ') || ''
+                profile.personalInfo.value.email = user.email
+                profile.personalInfo.value.phone = user.phone || ''
+                profile.personalInfo.value.dob = user.dob || ''
+                profile.personalInfo.value.gender = user.gender || ''
             }
         }
     }
 
     const saveProfile = () => {
         const data = {
-            personalInfo: personalInfo.value,
-            medicalInfo: medicalInfo.value,
-            emergencyContact: emergencyContact.value
+            personalInfo: profile.personalInfo.value,
+            medicalInfo: profile.medicalInfo.value,
+            emergencyContact: profile.emergencyContact.value
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 
@@ -66,18 +72,18 @@ export const usePatientProfileStore = (email) => {
         const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
         const userIndex = users.findIndex(u => u.email === email)
         if (userIndex !== -1) {
-            users[userIndex].fullName = `${personalInfo.value.firstName} ${personalInfo.value.lastName}`.trim()
-            users[userIndex].phone = personalInfo.value.phone
-            users[userIndex].dob = personalInfo.value.dob
-            users[userIndex].gender = personalInfo.value.gender
+            users[userIndex].fullName = `${profile.personalInfo.value.firstName} ${profile.personalInfo.value.lastName}`.trim()
+            users[userIndex].phone = profile.personalInfo.value.phone
+            users[userIndex].dob = profile.personalInfo.value.dob
+            users[userIndex].gender = profile.personalInfo.value.gender
             localStorage.setItem('registeredUsers', JSON.stringify(users))
         }
     }
 
     return {
-        personalInfo,
-        medicalInfo,
-        emergencyContact,
+        personalInfo: profile.personalInfo,
+        medicalInfo: profile.medicalInfo,
+        emergencyContact: profile.emergencyContact,
         loadProfile,
         saveProfile
     }

@@ -1,3 +1,4 @@
+<script setup>
 import { ref, computed } from 'vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
@@ -5,21 +6,27 @@ import {
   MagnifyingGlassIcon, 
   PencilSquareIcon, 
   TrashIcon, 
-  EllipsisVerticalIcon 
+  EllipsisVerticalIcon,
+  ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
+import { useDoctorsStore } from '../../stores/doctorsStore'
+import { useLogsStore } from '../../stores/logsStore'
+import { toast } from 'vue3-toastify'
 
 const searchQuery = ref('')
 const selectedRole = ref('All Roles')
+const { addDoctor } = useDoctorsStore()
+const { addLog } = useLogsStore()
 
 const getRegisteredUsers = () => {
   const usersList = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-  return usersList.map((user, index) => ({
-    id: index + 1,
+  return usersList.map((user) => ({
+    id: user.email,
     name: user.fullName,
     email: user.email,
-    role: 'Patient', // Default role
-    status: 'Active',
-    lastActive: 'Just now',
+    role: user.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'Patient',
+    status: user.status || 'Active',
+    lastActive: user.lastActive || 'Recently',
     avatar: `https://ui-avatars.com/api/?name=${user.fullName.split(' ').join('+')}&background=random`
   }))
 }
@@ -38,19 +45,12 @@ const filteredUsers = computed(() => {
   })
 })
 
-import { useDoctorsStore } from '../../stores/doctorsStore'
-import { toast } from 'vue3-toastify'
-
-const { addDoctor } = useDoctorsStore()
-
-// ... (existing refs)
-
 const showAddModal = ref(false)
 const newUser = ref({
   name: '',
   email: '',
   role: 'Patient',
-  specialty: '' // Only for doctors
+  specialty: '' 
 })
 
 const openAddModal = () => {
@@ -64,16 +64,29 @@ const handleAddUser = () => {
         return
     }
     
-    // Add to Users List (localStorage)
     const storedUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    
+    if (storedUsers.some(u => u.email === newUser.value.email)) {
+        toast.error('User with this email already exists')
+        return
+    }
+
     storedUsers.push({
         fullName: newUser.value.name,
         email: newUser.value.email,
-        role: newUser.value.role.toLowerCase()
+        role: newUser.value.role.toLowerCase(),
+        status: 'Active',
+        lastActive: new Date().toLocaleString(),
+        createdAt: new Date().toISOString()
     })
     localStorage.setItem('registeredUsers', JSON.stringify(storedUsers))
     
-    // If Doctor, add to Doctors Store
+    addLog({
+        type: 'CREATE',
+        action: `Added new ${newUser.value.role}`,
+        target: newUser.value.name
+    })
+
     if (newUser.value.role === 'Doctor') {
         if (!newUser.value.specialty) {
             toast.error('Specialty is required for doctors')
@@ -82,15 +95,54 @@ const handleAddUser = () => {
         addDoctor({
             name: newUser.value.name,
             specialty: newUser.value.specialty,
-            email: newUser.value.email
+            email: newUser.value.email,
+            status: 'Approved'
         })
     }
     
-    // Refresh local list
     users.value = getRegisteredUsers()
-    
     toast.success('User added successfully')
     showAddModal.value = false
+}
+
+const handleDeleteUser = (email) => {
+    if (confirm('Are you sure you want to delete this user?')) {
+        const storedUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+        const userToDelete = storedUsers.find(u => u.email === email)
+        const updatedUsers = storedUsers.filter(u => u.email !== email)
+        localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers))
+        
+        if (userToDelete) {
+            addLog({
+                type: 'DELETE',
+                action: 'Deleted user account',
+                target: userToDelete.fullName
+            })
+        }
+
+        users.value = getRegisteredUsers()
+        toast.error('User deleted')
+    }
+}
+
+const toggleUserStatus = (user) => {
+    const storedUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const userIdx = storedUsers.findIndex(u => u.email === user.email)
+    
+    if (userIdx !== -1) {
+        const newStatus = storedUsers[userIdx].status === 'Deactivated' ? 'Active' : 'Deactivated'
+        storedUsers[userIdx].status = newStatus
+        localStorage.setItem('registeredUsers', JSON.stringify(storedUsers))
+        
+        addLog({
+            type: 'UPDATE',
+            action: `${newStatus === 'Active' ? 'Activated' : 'Deactivated'} user account`,
+            target: user.name
+        })
+
+        users.value = getRegisteredUsers()
+        toast.info(`User ${newStatus.toLowerCase()}`)
+    }
 }
 
 const roles = ['All Roles', 'Admin', 'Doctor', 'Patient', 'Staff']
@@ -199,10 +251,15 @@ const formRoles = ['Admin', 'Doctor', 'Patient', 'Staff']
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end space-x-2">
-                  <button class="text-gray-400 hover:text-brand-600 transition-colors">
-                    <PencilSquareIcon class="w-5 h-5" />
+                  <button 
+                    @click="toggleUserStatus(user)"
+                    class="p-1.5 transition-colors rounded-lg"
+                    :class="user.status === 'Active' ? 'text-orange-400 hover:text-orange-600' : 'text-green-400 hover:text-green-600'"
+                    :title="user.status === 'Active' ? 'Deactivate' : 'Activate'"
+                  >
+                    <ShieldCheckIcon class="w-5 h-5" />
                   </button>
-                  <button class="text-gray-400 hover:text-red-600 transition-colors">
+                  <button @click="handleDeleteUser(user.email)" class="text-gray-400 hover:text-red-600 transition-colors">
                     <TrashIcon class="w-5 h-5" />
                   </button>
                 </div>
@@ -240,6 +297,8 @@ const formRoles = ['Admin', 'Doctor', 'Patient', 'Staff']
             </nav>
           </div>
         </div>
+      </div>
+    </div>
   </div>
 
   <!-- Add User Modal -->

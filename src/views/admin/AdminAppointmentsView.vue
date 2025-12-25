@@ -10,7 +10,19 @@ import {
   UserIcon,
   CalendarDaysIcon
 } from '@heroicons/vue/24/outline'
-import { appointments, upcomingCount, pendingCount, pastCount, totalAppointments, removeAppointment } from '../../stores/appointmentsStore'
+import { useAppointmentsStore } from '../../stores/appointmentsStore'
+
+const { 
+  appointments, 
+  upcomingCount, 
+  pendingCount, 
+  pastCount, 
+  totalAppointments, 
+  removeAppointment,
+  updateAppointmentStatus 
+} = useAppointmentsStore()
+
+const expandedIds = ref(new Set())
 
 const stats = computed(() => [
   { name: 'Total Appointments', value: totalAppointments.value, bg: 'bg-white' },
@@ -32,16 +44,17 @@ const filteredAppointments = computed(() => {
 })
 
 const toggleExpand = (id) => {
-    const appt = appointments.value.find(a => a.id === id)
-    if (appt) appt.expanded = !appt.expanded
+    if (expandedIds.value.has(id)) {
+        expandedIds.value.delete(id)
+    } else {
+        expandedIds.value.add(id)
+    }
 }
 
+const isExpanded = (id) => expandedIds.value.has(id)
+
 const confirmAppointment = (id) => {
-    const appt = appointments.value.find(a => a.id === id)
-    if (appt) {
-        appt.status = 'Confirmed'
-        appt.category = 'upcoming'
-    }
+    updateAppointmentStatus(id, 'Confirmed')
 }
 
 const rejectAppointment = (id) => {
@@ -119,19 +132,19 @@ const rejectAppointment = (id) => {
              
              <div class="flex items-center gap-3">
                   <div v-if="appt.status === 'Pending'" class="flex gap-2 mr-6">
-                      <button @click.stop="confirmAppointment(appt.id)" class="p-2 bg-green-500 text-white rounded-[8px] hover:bg-green-600 shadow-sm transition-colors"><CheckCircleIcon class="w-6 h-6"/></button>
+                  <button @click.stop="confirmAppointment(appt.id)" class="p-2 bg-green-500 text-white rounded-[8px] hover:bg-green-600 shadow-sm transition-colors"><CheckCircleIcon class="w-6 h-6"/></button>
                       <button @click.stop="rejectAppointment(appt.id)" class="p-2 bg-red-500 text-white rounded-[8px] hover:bg-red-600 shadow-sm transition-colors"><XCircleIcon class="w-6 h-6"/></button>
                   </div>
                  <button class="p-2 bg-blue-500 text-white rounded-[8px] hover:bg-blue-600 shadow-sm transition-colors"><PencilSquareIcon class="w-6 h-6"/></button>
                  <button class="p-1 rounded-full hover:bg-gray-100 transition-colors">
-                     <ChevronUpIcon v-if="appt.expanded" class="w-6 h-6 text-gray-400" />
+                     <ChevronUpIcon v-if="isExpanded(appt.id)" class="w-6 h-6 text-gray-400" />
                      <ChevronDownIcon v-else class="w-6 h-6 text-gray-400" />
                  </button>
              </div>
          </div>
 
          <!-- Expanded Details -->
-         <div v-if="appt.expanded" class="p-8 border-t border-gray-100 bg-gray-50/30">
+         <div v-if="isExpanded(appt.id)" class="p-8 border-t border-gray-100 bg-gray-50/30">
              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <!-- Patient Information -->
                  <div>

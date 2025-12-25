@@ -2,7 +2,8 @@
 import { ref, computed } from 'vue'
 import BookAppointmentModal from '../components/BookAppointmentModal.vue'
 import Swal from 'sweetalert2'
-import { appointments, addAppointment, removeAppointment, upcomingCount, pendingCount, pastCount, totalAppointments } from '../stores/appointmentsStore'
+import { useAppointmentsStore } from '../stores/appointmentsStore'
+const { appointments, addAppointment, removeAppointment, upcomingCount, pendingCount, pastCount, totalAppointments } = useAppointmentsStore()
 
 const showModal = ref(false)
 const query = ref('')

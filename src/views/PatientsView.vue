@@ -315,9 +315,11 @@
 
 <script setup>
 import { ref, computed, reactive } from 'vue';
-import { addAppointment, appointments } from '../stores/appointmentsStore';
+import { useAppointmentsStore } from '../stores/appointmentsStore';
+const { addAppointment, appointments } = useAppointmentsStore();
 import { useValidation } from '../composables/useValidation';
-import { patients, addPatient } from '../stores/patientsStore';
+import { usePatientsStore } from '../stores/patientsStore';
+const { patients, addPatient } = usePatientsStore();
 
 const searchQuery = ref('');
 const showPatientModal = ref(false);

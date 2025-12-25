@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { appointments, upcomingCount, pendingCount, pastCount, totalAppointments, removeAppointment } from '../stores/appointmentsStore'
+import { useAppointmentsStore } from '../stores/appointmentsStore'
+const { appointments, upcomingCount, pendingCount, pastCount, totalAppointments, removeAppointment } = useAppointmentsStore()
 
 const router = useRouter()
 const searchQuery = ref('')

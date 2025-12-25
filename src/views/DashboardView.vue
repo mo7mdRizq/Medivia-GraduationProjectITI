@@ -2,7 +2,7 @@
   <div>
         <!-- Header -->
         <header class="mb-8 mt-2 lg:mt-0">
-            <h2 class="text-xl md:text-2xl font-bold text-gray-900">Welcome back, Dr. Chen</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-gray-900">Welcome back, {{ currentUser.name }}</h2>
             <p class="text-sm md:text-base text-gray-500 mt-1">Here's your practice overview for today</p>
         </header>
 
@@ -20,11 +20,11 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 mb-1">
-                    <span class="text-3xl font-bold text-gray-900">248</span>
+                    <span class="text-3xl font-bold text-gray-900">{{ patients.length }}</span>
                     <span class="text-xs font-medium text-green-500 bg-green-50 px-2 py-0.5 rounded-full">↗ ~8%</span>
                 </div>
                 <p class="text-sm font-medium text-gray-900">Total Patients</p>
-                <p class="text-xs text-gray-400 mt-1">12 new this month</p>
+                <p class="text-xs text-gray-400 mt-1">Managed patients</p>
             </div>
 
             <!-- Stat Card 2 -->
@@ -39,10 +39,10 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 mb-1">
-                    <span class="text-3xl font-bold text-gray-900">5</span>
+                    <span class="text-3xl font-bold text-gray-900">{{ todaysAppointments.length }}</span>
                 </div>
                 <p class="text-sm font-medium text-gray-900">Today's Appointments</p>
-                <p class="text-xs text-gray-400 mt-1">2 pending confirmation</p>
+                <p class="text-xs text-gray-400 mt-1">Upcoming scheduled</p>
             </div>
 
             <!-- Stat Card 3 -->
@@ -61,10 +61,10 @@
                         </svg></span>
                 </div>
                 <div class="flex items-center space-x-2 mb-1">
-                    <span class="text-3xl font-bold text-gray-900">4</span>
+                    <span class="text-3xl font-bold text-gray-900">{{ approvals.length }}</span>
                 </div>
                 <p class="text-sm font-medium text-gray-900">Pending Approvals</p>
-                <p class="text-xs text-gray-400 mt-1">1 urgent request</p>
+                <p class="text-xs text-gray-400 mt-1">Tasks needing review</p>
             </div>
 
             <!-- Stat Card 4 -->
@@ -79,10 +79,10 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 mb-1">
-                    <span class="text-3xl font-bold text-gray-900">18</span>
+                    <span class="text-3xl font-bold text-gray-900">{{ visits.length }}</span>
                 </div>
                 <p class="text-sm font-medium text-gray-900">Recent Visits</p>
-                <p class="text-xs text-gray-400 mt-1">This week</p>
+                <p class="text-xs text-gray-400 mt-1">Total history</p>
             </div>
         </div>
 
@@ -165,7 +165,7 @@
 
                 <!-- List Items -->
                 <div class="space-y-4">
-                    <div v-for="appt in appointments" :key="appt.time"
+                    <div v-for="appt in todaysAppointments" :key="appt.time"
                         class="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer group">
                         <div class="flex items-center space-x-4">
                             <div class="text-center">
@@ -263,35 +263,43 @@
         </div>
   </div>
 </template>
-
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useUserStore } from '../stores/userStore';
+import { useAppointmentsStore } from '../stores/appointmentsStore';
+import { useVisitsStore } from '../stores/visitsStore';
+import { useApprovalsStore } from '../stores/approvalsStore';
+import { usePatientsStore } from '../stores/patientsStore';
 
-const appointments = ref([
-    { time: '9:00 AM', duration: '30 min', name: 'John Martinez', type: 'Follow-up', status: 'Confirmed' },
-    { time: '10:00 AM', duration: '45 min', name: 'Emily Johnson', type: 'Initial Consultation', status: 'Confirmed' },
-    { time: '11:30 AM', duration: '60 min', name: 'Michael Brown', type: 'Annual Physical', status: 'Pending' },
-    { time: '2:00 PM', duration: '30 min', name: 'Sarah Davis', type: 'Follow-up', status: 'Confirmed' },
-    { time: '3:30 PM', duration: '20 min', name: 'Robert Wilson', type: 'Lab Results Review', status: 'Confirmed' },
-]);
+const { currentUser } = useUserStore();
+const { appointments } = useAppointmentsStore();
+const { visits } = useVisitsStore();
+const { approvals, removeApproval } = useApprovalsStore();
+const { patients } = usePatientsStore();
 
-const recentVisits = ref([
-    { name: 'Jessica Lee', date: 'Dec 7, 2025', condition: 'Hypertension - Well Controlled' },
-    { name: 'David Kim', date: 'Dec 7, 2025', condition: 'Type 2 Diabetes Follow-up' },
-    { name: 'Amanda White', date: 'Dec 6, 2025', condition: 'Annual Physical - Healthy' },
-    { name: 'James Taylor', date: 'Dec 6, 2025', condition: 'Acute Bronchitis' },
-]);
+const todaysAppointments = computed(() => {
+    // In a real app we'd filter by today's date.
+    // For now we'll slice a few.
+    return appointments.value.slice(0, 5).map(a => ({
+        time: a.time,
+        duration: '30 min',
+        name: a.patient || a.patientName || 'Anonymous',
+        type: a.type || 'Consultation',
+        status: a.status
+    }));
+});
 
-const pendingApprovals = ref([
-    { id: 1, title: 'Prescription Refill', patient: 'John Martinez', details: 'Lisinopril 10mg', urgent: false },
-    { id: 2, title: 'Lab Order', patient: 'Emily Johnson', details: 'Comprehensive Metabolic Panel', urgent: false },
-    { id: 3, title: 'Referral Request', patient: 'Michael Brown', details: 'Referral to: Orthopedic Surgery', urgent: true },
-    { id: 4, title: 'Medical Records', patient: 'Sarah Davis', details: 'Records Transfer Request', urgent: false },
-]);
+const recentVisits = computed(() => {
+    return visits.value.slice(0, 4).map(v => ({
+        name: v.patientName || v.patient || 'Anonymous',
+        date: v.date,
+        condition: v.diagnosis || 'Standard Checkup'
+    }));
+});
+
+const pendingApprovals = computed(() => approvals.value.slice(0, 4));
 
 const approveItem = (id) => {
-    pendingApprovals.value = pendingApprovals.value.filter(item => item.id !== id);
-    // Add toast notification logic here if using a global store or emit
-    // For now simple removal
+    removeApproval(id);
 };
 </script>

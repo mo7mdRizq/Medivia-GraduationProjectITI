@@ -10,16 +10,24 @@ const getStoredVitals = () => {
     }
 }
 
-export const vitals = ref(getStoredVitals())
+const vitals = ref(getStoredVitals())
 
 watch(vitals, (newVal) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
 }, { deep: true })
 
-export const addBPRecord = (record) => {
-    vitals.value.bp.push(record)
-}
+export const useVitalsStore = () => {
+    const addBPRecord = (record) => {
+        vitals.value.bp.push(record)
+    }
 
-export const addGlucoseRecord = (record) => {
-    vitals.value.glucose.push(record)
+    const addGlucoseRecord = (record) => {
+        vitals.value.glucose.push(record)
+    }
+
+    return {
+        vitals,
+        addBPRecord,
+        addGlucoseRecord
+    }
 }

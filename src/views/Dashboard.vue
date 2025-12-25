@@ -4,15 +4,16 @@ import { useRouter } from 'vue-router'
 import BookAppointmentModal from '../components/BookAppointmentModal.vue'
 import Swal from 'sweetalert2'
 import { useUserStore } from '../stores/userStore'
-import { 
-  addAppointment, 
-  appointments,
-  pendingCount as appointmentsPendingCount 
-} from '../stores/appointmentsStore'
-import { totalTests } from '../stores/labResultsStore'
-import { activeCount as activePrescriptionsCount } from '../stores/prescriptionsStore'
-import { totalVisits } from '../stores/visitsStore'
-import { vitals } from '../stores/vitalsStore'
+import { useAppointmentsStore } from '../stores/appointmentsStore'
+const { addAppointment, appointments, pendingCount: appointmentsPendingCount } = useAppointmentsStore()
+import { useLabResultsStore } from '../stores/labResultsStore'
+const { totalTests } = useLabResultsStore()
+import { usePrescriptionsStore } from '../stores/prescriptionsStore'
+const { activeCount: activePrescriptionsCount } = usePrescriptionsStore()
+import { useVisitsStore } from '../stores/visitsStore'
+const { totalVisits } = useVisitsStore()
+import { useVitalsStore } from '../stores/vitalsStore'
+const { vitals } = useVitalsStore()
 import { 
   Chart, 
   LineController, 

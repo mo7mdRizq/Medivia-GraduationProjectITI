@@ -4,14 +4,15 @@ import UploadLabResultModal from '../components/UploadLabResultModal.vue'
 import Swal from 'sweetalert2'
 import { generatePDF } from '../utils/pdfGenerator'
 import { Chart, registerables } from 'chart.js'
-import { 
+import { useLabResultsStore } from '../stores/labResultsStore'
+const { 
   labResults, 
   historicalData, 
   totalTests, 
   normalResultsCount, 
   attentionResultsCount, 
   addLabResult 
-} from '../stores/labResultsStore'
+} = useLabResultsStore()
 
 // Register Chart.js components
 Chart.register(...registerables)

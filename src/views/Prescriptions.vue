@@ -3,13 +3,14 @@ import { ref, computed } from 'vue'
 import AIPrescriptionModal from '../components/AIPrescriptionModal.vue'
 import Swal from 'sweetalert2'
 import { generatePDF } from '../utils/pdfGenerator'
-import { 
+import { usePrescriptionsStore } from '../stores/prescriptionsStore'
+const { 
   prescriptions, 
   activeCount, 
   refillSoonCount, 
   completedCount, 
   addPrescription 
-} from '../stores/prescriptionsStore'
+} = usePrescriptionsStore()
 
 const showAIModal = ref(false)
 const query = ref('')

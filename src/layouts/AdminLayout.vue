@@ -8,7 +8,11 @@ import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  UserCircleIcon,
+  AcademicCapIcon,
+  ClipboardDocumentListIcon,
+  Cog6ToothIcon
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -17,11 +21,22 @@ const isMobileMenuOpen = ref(false)
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: Squares2X2Icon },
-  { name: 'Patients Management', href: '/admin/patients', icon: UsersIcon },
+  { name: 'Users Control', href: '/admin/users', icon: UserCircleIcon },
+  { name: 'Doctors Management', href: '/admin/doctors', icon: AcademicCapIcon },
+  { name: 'Patients List', href: '/admin/patients', icon: UsersIcon },
   { name: 'Appointments Manager', href: '/admin/appointments', icon: CalendarIcon },
+  { name: 'Activity Logs', href: '/admin/logs', icon: ClipboardDocumentListIcon },
+  { name: 'System Settings', href: '/admin/settings', icon: Cog6ToothIcon },
 ]
 
 const currentRouteName = computed(() => route.name)
+
+const adminName = ref(localStorage.getItem('userName') || 'Admin Manager')
+const adminInitials = computed(() => {
+    const names = adminName.value.split(' ')
+    if (names.length >= 2) return (names[0][0] + names[1][0]).toUpperCase()
+    return adminName.value.slice(0, 2).toUpperCase()
+})
 
 const handleLogout = () => {
   localStorage.removeItem('isAuthenticated')
@@ -63,10 +78,10 @@ const handleLogout = () => {
       <div class="px-4 py-6">
         <div class="bg-indigo-50 rounded-xl p-4 flex items-center gap-3 border border-indigo-100">
            <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
-             AM
+             {{ adminInitials }}
            </div>
            <div>
-             <h3 class="font-bold text-gray-900 text-sm">Admin Manager</h3>
+             <h3 class="font-bold text-gray-900 text-sm">{{ adminName }}</h3>
              <p class="text-xs text-indigo-600 font-medium">System Administrator</p>
            </div>
         </div>

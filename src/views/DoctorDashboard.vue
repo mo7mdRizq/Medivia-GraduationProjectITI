@@ -270,13 +270,16 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useUserStore } from '../stores/userStore';
-import { appointments } from '../stores/appointmentsStore';
-import { visits } from '../stores/visitsStore';
-import { approvals, removeApproval } from '../stores/approvalsStore';
-import { patients } from '../stores/patientsStore';
+import { useAppointmentsStore } from '../stores/appointmentsStore';
+import { useVisitsStore } from '../stores/visitsStore';
+import { useApprovalsStore } from '../stores/approvalsStore';
+import { usePatientsStore } from '../stores/patientsStore';
 
 const { currentUser, loadFromStorage } = useUserStore();
+const { appointments } = useAppointmentsStore();
+const { visits } = useVisitsStore();
+const { approvals, removeApproval } = useApprovalsStore();
+const { patients } = usePatientsStore();
 
 onMounted(() => {
     loadFromStorage();

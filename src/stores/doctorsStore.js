@@ -31,6 +31,14 @@ export const useDoctorsStore = () => {
         saveDoctors()
     }
 
+    const updateDoctor = (updatedDoc) => {
+        const index = doctors.value.findIndex(d => d.id === updatedDoc.id)
+        if (index !== -1) {
+            doctors.value[index] = { ...updatedDoc }
+            saveDoctors()
+        }
+    }
+
     // Helper to get formatted name for dropdowns
     const getDoctorOptions = () => {
         return doctors.value.map(d => `${d.name} (${d.specialty})`)
@@ -40,6 +48,7 @@ export const useDoctorsStore = () => {
         doctors,
         addDoctor,
         removeDoctor,
+        updateDoctor,
         getDoctorOptions
     }
 }

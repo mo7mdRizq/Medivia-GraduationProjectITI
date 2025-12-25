@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import AddMedicalHistoryModal from '../components/AddMedicalHistoryModal.vue'
 import Swal from 'sweetalert2'
 import { generatePDF } from '../utils/pdfGenerator'
-import { medicalHistory, addMedicalHistory } from '../stores/medicalHistoryStore'
+import { useMedicalHistoryStore } from '../stores/medicalHistoryStore'
+const { medicalHistory, addMedicalHistory } = useMedicalHistoryStore()
 
 const showModal = ref(false)
 const query = ref('')

@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useLogsStore } from '../../stores/logsStore'
+import { toast } from 'vue3-toastify'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { 
@@ -10,10 +12,34 @@ import {
   CalendarDaysIcon,
   UserIcon,
   PencilSquareIcon,
-  TrashIcon
+  TrashIcon,
+  ShieldExclamationIcon,
+  ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
 
+const { addLog } = useLogsStore()
 const searchQuery = ref('')
+
+const getRegisteredPatients = () => {
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    return users
+      .filter(user => user.role === 'patient' || !user.role) // Include patients and legacy users
+      .map((user, index) => ({
+        id: user.email,
+        name: user.fullName,
+        age: user.age || 'N/A',
+        gender: user.gender || 'N/A',
+        status: user.status || 'Active',
+        phone: user.phone || 'N/A',
+        email: user.email,
+        lastVisit: user.lastVisit || 'No records',
+        doctor: 'Not assigned',
+        tags: user.status === 'Suspended' ? ['Blocked'] : [],
+        avatarColor: 'bg-indigo-600'
+    }))
+}
+
+const patients = ref(getRegisteredPatients())
 
 const filteredPatients = computed(() => {
   const q = searchQuery.value.toLowerCase()
@@ -25,24 +51,52 @@ const filteredPatients = computed(() => {
   )
 })
 
-const getRegisteredPatients = () => {
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-    return users.map((user, index) => ({
-        id: index + 100,
-        name: user.fullName,
-        age: 'Not specified',
-        gender: 'Not specified',
-        status: 'Active',
-        phone: 'Not provided',
-        email: user.email,
-        lastVisit: 'Never',
-        doctor: 'Unassigned',
-        tags: [],
-        avatarColor: 'bg-indigo-600'
-    }))
+const stats = computed(() => [
+  { name: 'Total Patients', value: patients.value.length, color: 'text-indigo-600' },
+  { name: 'Active Now', value: patients.value.filter(p => p.status === 'Active').length, color: 'text-green-600' },
+  { name: 'Blocked', value: patients.value.filter(p => p.status === 'Suspended' || p.status === 'Blocked').length, color: 'text-red-600' }
+])
+
+const toggleBlockPatient = (patient) => {
+    const storedUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    const idx = storedUsers.findIndex(u => u.email === patient.email)
+    
+    if (idx !== -1) {
+        const isBlocked = storedUsers[idx].status === 'Suspended'
+        const newStatus = isBlocked ? 'Active' : 'Suspended'
+        storedUsers[idx].status = newStatus
+        localStorage.setItem('registeredUsers', JSON.stringify(storedUsers))
+        
+        addLog({
+            type: 'UPDATE',
+            action: `${isBlocked ? 'Unblocked' : 'Blocked'} patient access`,
+            target: patient.name
+        })
+
+        patients.value = getRegisteredPatients()
+        toast.info(`Patient ${isBlocked ? 'unblocked' : 'blocked'}`)
+    }
 }
 
-const patients = ref(getRegisteredPatients());
+const handleDeletePatient = (email) => {
+    if (confirm('Are you sure you want to permanently delete this patient record?')) {
+        const storedUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+        const userToDelete = storedUsers.find(u => u.email === email)
+        const updatedUsers = storedUsers.filter(u => u.email !== email)
+        localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers))
+        
+        if (userToDelete) {
+            addLog({
+                type: 'DELETE',
+                action: 'Deleted patient record',
+                target: userToDelete.fullName
+            })
+        }
+
+        patients.value = getRegisteredPatients()
+        toast.error('Patient record deleted')
+    }
+}
 </script>
 
 <template>
@@ -139,11 +193,15 @@ const patients = ref(getRegisteredPatients());
 
               <!-- Actions -->
               <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
-                  <button class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                      <PencilSquareIcon class="w-4 h-4" />
-                      Edit
+                  <button 
+                    @click="toggleBlockPatient(patient)"
+                    class="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    :class="patient.status === 'Suspended' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'"
+                  >
+                      <component :is="patient.status === 'Suspended' ? ShieldCheckIcon : ShieldExclamationIcon" class="w-4 h-4" />
+                      {{ patient.status === 'Suspended' ? 'Unblock' : 'Block' }}
                   </button>
-                  <button class="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+                  <button @click="handleDeletePatient(patient.email)" class="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
                       <TrashIcon class="w-4 h-4" />
                       Delete
                   </button>

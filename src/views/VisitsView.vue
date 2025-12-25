@@ -287,7 +287,8 @@
 
 <script setup>
 import { ref, computed, reactive } from 'vue';
-import { visits, addVisit } from '../stores/visitsStore';
+import { useVisitsStore } from '../stores/visitsStore';
+const { visits, addVisit } = useVisitsStore();
 
 const searchQuery = ref('');
 const showLogVisitModal = ref(false);

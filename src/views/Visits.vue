@@ -3,13 +3,14 @@ import { ref, computed } from 'vue'
 import AddVisitModal from '../components/AddVisitModal.vue'
 import Swal from 'sweetalert2'
 import { generatePDF } from '../utils/pdfGenerator'
-import { 
+import { useVisitsStore } from '../stores/visitsStore'
+const { 
   visits, 
   totalVisits, 
   recentVisitsCount, 
   uniqueProvidersCount, 
   addVisit 
-} from '../stores/visitsStore'
+} = useVisitsStore()
 
 const showModal = ref(false)
 const query = ref('')

@@ -57,6 +57,36 @@ const router = createRouter({
                     component: () => import('../views/admin/AdminAppointmentsView.vue'),
                     meta: { title: 'Appointments - Medivia Admin' }
                 },
+                {
+                    path: 'users',
+                    name: 'admin-users',
+                    component: () => import('../views/admin/AdminUsersView.vue'),
+                    meta: { title: 'User Management - Medivia Admin' }
+                },
+                {
+                    path: 'patients',
+                    name: 'admin-patients',
+                    component: () => import('../views/admin/AdminPatientsView.vue'),
+                    meta: { title: 'Patient Management - Medivia Admin' }
+                },
+                {
+                    path: 'doctors',
+                    name: 'admin-doctors',
+                    component: () => import('../views/admin/AdminDoctorsView.vue'),
+                    meta: { title: 'Doctor Management - Medivia Admin' }
+                },
+                {
+                    path: 'logs',
+                    name: 'admin-logs',
+                    component: () => import('../views/admin/AdminLogsView.vue'),
+                    meta: { title: 'Activity Logs - Medivia Admin' }
+                },
+                {
+                    path: 'settings',
+                    name: 'admin-settings',
+                    component: () => import('../views/admin/AdminSettingsView.vue'),
+                    meta: { title: 'System Settings - Medivia Admin' }
+                },
             ]
         },
         // Patient Dashboard Routes

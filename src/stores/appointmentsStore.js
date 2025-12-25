@@ -2,60 +2,99 @@ import { ref, computed, watch } from 'vue'
 
 const STORAGE_KEY = 'medivia_appointments'
 
-// Load from localStorage or use default mock array
+// Helper to generate mock appointments for the last 6 months
+const generateHistoricalData = () => {
+    const appts = []
+    const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const doctors = ['Dr. Sarah Johnson', 'Dr. Michael Chen', 'Dr. Emily Rodriguez']
+
+    months.forEach((month, mIdx) => {
+        const count = 10 + Math.floor(Math.random() * 20)
+        for (let i = 0; i < count; i++) {
+            appts.push({
+                id: `hist-${mIdx}-${i}`,
+                type: 'Consultation',
+                status: Math.random() > 0.3 ? 'Completed' : 'Cancelled',
+                doctor: doctors[Math.floor(Math.random() * doctors.length)],
+                date: `${month} ${Math.floor(Math.random() * 28) + 1}, 2025`,
+                time: '10:00 AM',
+                category: 'past'
+            })
+        }
+    })
+
+    // Add some upcoming ones
+    appts.push({
+        id: 'up-1',
+        type: 'General Checkup',
+        status: 'Confirmed',
+        doctor: 'Dr. Sarah Johnson',
+        date: 'Dec 28, 2025',
+        time: '09:30 AM',
+        category: 'upcoming'
+    })
+    appts.push({
+        id: 'up-2',
+        type: 'Blood Test',
+        status: 'Pending',
+        doctor: 'Dr. Michael Chen',
+        date: 'Dec 30, 2025',
+        time: '11:00 AM',
+        category: 'pending'
+    })
+
+    return appts
+}
+
 const getStoredAppointments = () => {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) return JSON.parse(stored)
-
-    // Default mock data for first-time use
-    return [
-        {
-            id: 1,
-            type: 'General Consultation',
-            status: 'Confirmed',
-            doctor: 'Dr. Sarah Johnson',
-            specialty: 'Cardiology',
-            date: 'Dec 28, 2025',
-            time: '10:30 AM',
-            location: 'Main Medical Center',
-            notes: 'Follow-up for heart health check-up.',
-            category: 'upcoming'
-        },
-        {
-            id: 2,
-            type: 'Lab Work',
-            status: 'Pending',
-            doctor: 'Dr. Michael Chen',
-            specialty: 'Primary Care',
-            date: 'Dec 30, 2025',
-            time: '02:00 PM',
-            location: 'Diagnostics Wing B',
-            notes: 'Annual blood work and cholesterol screening.',
-            category: 'pending'
-        }
-    ]
+    return generateHistoricalData()
 }
 
-// Shared appointments state
-export const appointments = ref(getStoredAppointments())
+const appointments = ref(getStoredAppointments())
 
-// Watch for changes and save to localStorage
 watch(appointments, (newVal) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
 }, { deep: true })
 
-// Helper function to remove an appointment
-export const removeAppointment = (id) => {
-    appointments.value = appointments.value.filter(a => a.id !== id)
-}
+export const useAppointmentsStore = () => {
+    const addAppointment = (appt) => {
+        appointments.value.unshift({
+            id: Date.now(),
+            ...appt
+        })
+    }
 
-// Helper function to add a new appointment
-export const addAppointment = (newAppointment) => {
-    appointments.value.unshift(newAppointment)
-}
+    const removeAppointment = (id) => {
+        appointments.value = appointments.value.filter(a => a.id !== id)
+    }
 
-// Computed properties for counts
-export const upcomingCount = computed(() => appointments.value.filter(a => a.category === 'upcoming').length)
-export const pendingCount = computed(() => appointments.value.filter(a => a.category === 'pending').length)
-export const pastCount = computed(() => appointments.value.filter(a => a.category === 'past').length)
-export const totalAppointments = computed(() => appointments.value.length)
+    const upcomingCount = computed(() => appointments.value.filter(a => a.category === 'upcoming').length)
+    const pendingCount = computed(() => appointments.value.filter(a => a.category === 'pending').length)
+    const pastCount = computed(() => appointments.value.filter(a => a.category === 'past' || a.status === 'Completed').length)
+    const totalAppointments = computed(() => appointments.value.length)
+
+    const updateAppointmentStatus = (id, status) => {
+        const index = appointments.value.findIndex(a => a.id === id)
+        if (index !== -1) {
+            appointments.value[index].status = status
+            if (status === 'Confirmed') {
+                appointments.value[index].category = 'upcoming'
+            } else if (status === 'Completed') {
+                appointments.value[index].category = 'past'
+            }
+        }
+    }
+
+    return {
+        appointments,
+        addAppointment,
+        removeAppointment,
+        upcomingCount,
+        pendingCount,
+        pastCount,
+        totalAppointments,
+        updateAppointmentStatus
+    }
+}

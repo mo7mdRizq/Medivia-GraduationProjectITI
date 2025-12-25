@@ -7,12 +7,19 @@ const getStoredItems = () => {
     return stored ? JSON.parse(stored) : []
 }
 
-export const medicalHistory = ref(getStoredItems())
+const medicalHistory = ref(getStoredItems())
 
 watch(medicalHistory, (newVal) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
 }, { deep: true })
 
-export const addMedicalHistory = (newRecord) => {
-    medicalHistory.value.unshift(newRecord)
+export const useMedicalHistoryStore = () => {
+    const addMedicalHistory = (newRecord) => {
+        medicalHistory.value.unshift(newRecord)
+    }
+
+    return {
+        medicalHistory,
+        addMedicalHistory
+    }
 }

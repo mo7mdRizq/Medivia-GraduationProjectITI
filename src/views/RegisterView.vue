@@ -113,7 +113,9 @@ const handleRegister = () => {
       gender: gender.value,
       role: role.value,
       specialty: specialty.value, // Added specialty
-      password: password.value
+      password: password.value,
+      createdAt: new Date().toISOString(),
+      status: 'Active'
     }
     
     users.push(newUser)

@@ -8,20 +8,24 @@ const getStoredApprovals = () => {
     return stored ? JSON.parse(stored) : []
 }
 
-// Shared approvals state
-export const approvals = ref(getStoredApprovals())
+const approvals = ref(getStoredApprovals())
 
-// Watch for changes and save to localStorage
 watch(approvals, (newVal) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
 }, { deep: true })
 
-// Helper function to add a new approval item
-export const addApproval = (item) => {
-    approvals.value.unshift(item)
-}
+export const useApprovalsStore = () => {
+    const addApproval = (item) => {
+        approvals.value.unshift(item)
+    }
 
-// Helper to remove approval (approve/reject)
-export const removeApproval = (id) => {
-    approvals.value = approvals.value.filter(a => a.id !== id)
+    const removeApproval = (id) => {
+        approvals.value = approvals.value.filter(a => a.id !== id)
+    }
+
+    return {
+        approvals,
+        addApproval,
+        removeApproval
+    }
 }
