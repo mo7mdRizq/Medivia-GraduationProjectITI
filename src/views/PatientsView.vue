@@ -158,46 +158,56 @@
                         <!-- Name -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                            <input v-model="newPatient.name" type="text" required
+                            <input v-model="newPatient.name" type="text" @input="validateName('name', newPatient.name, 'Full Name')" required
                                 class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.name}"
                                 placeholder="e.g. John Doe">
+                             <p v-if="errors.name" class="text-xs text-red-500 mt-1">{{ errors.name }}</p>
                         </div>
 
                         <!-- Age -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Age</label>
-                            <input v-model="newPatient.age" type="number" required
+                            <input v-model="newPatient.age" type="number" @input="validateAge('age', newPatient.age)" required
                                 class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.age}"
                                 placeholder="e.g. 30">
+                            <p v-if="errors.age" class="text-xs text-red-500 mt-1">{{ errors.age }}</p>
                         </div>
 
                         <!-- Gender -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                            <select v-model="newPatient.gender" required
-                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all">
+                            <select v-model="newPatient.gender" @change="validateRequired('gender', newPatient.gender, 'Gender')" required
+                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.gender}">
                                 <option value="" disabled>Select Gender</option>
                                 <option>Male</option>
                                 <option>Female</option>
                                 <option>Other</option>
                             </select>
+                             <p v-if="errors.gender" class="text-xs text-red-500 mt-1">{{ errors.gender }}</p>
                         </div>
 
                          <!-- Phone -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                            <input v-model="newPatient.phone" type="tel" required
+                            <input v-model="newPatient.phone" type="tel" @input="validatePhone('phone', newPatient.phone)" required
                                 class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.phone}"
                                 placeholder="(555) 000-0000">
+                            <p v-if="errors.phone" class="text-xs text-red-500 mt-1">{{ errors.phone }}</p>
                         </div>
                     </div>
 
                     <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input v-model="newPatient.email" type="email" required
+                        <input v-model="newPatient.email" type="email" @input="validateEmail('email', newPatient.email)" required
                             class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition-all"
+                            :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.email}"
                             placeholder="john@example.com">
+                        <p v-if="errors.email" class="text-xs text-red-500 mt-1">{{ errors.email }}</p>
                     </div>
 
                     <!-- Conditions -->
@@ -255,11 +265,17 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                            <input v-model="newAppointment.date" type="date" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input v-model="newAppointment.date" @input="validateRequired('apptDate', newAppointment.date, 'Appointment Date')" type="date" required 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.apptDate}">
+                             <p v-if="errors.apptDate" class="text-xs text-red-500 mt-1">{{ errors.apptDate }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                            <input v-model="newAppointment.time" type="time" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input v-model="newAppointment.time" @input="validateRequired('apptTime', newAppointment.time, 'Appointment Time')" type="time" required 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.apptTime}">
+                            <p v-if="errors.apptTime" class="text-xs text-red-500 mt-1">{{ errors.apptTime }}</p>
                         </div>
                     </div>
 
@@ -275,7 +291,11 @@
 
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                        <textarea v-model="newAppointment.description" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Reason for visit..."></textarea>
+                        <textarea v-model="newAppointment.description" @input="validateRequired('apptReason', newAppointment.description, 'Reason')" rows="3" 
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': errors.apptReason}"
+                             placeholder="Reason for visit..."></textarea>
+                        <p v-if="errors.apptReason" class="text-xs text-red-500 mt-1">{{ errors.apptReason }}</p>
                     </div>
 
                     <div class="flex gap-3">
@@ -296,11 +316,15 @@
 <script setup>
 import { ref, computed, reactive } from 'vue';
 import { addAppointment, appointments } from '../stores/appointmentsStore';
+import { useValidation } from '../composables/useValidation';
+import { patients, addPatient } from '../stores/patientsStore';
 
 const searchQuery = ref('');
 const showPatientModal = ref(false);
 const showScheduleModal = ref(false);
 const selectedPatientForSchedule = ref(null);
+
+const { errors, validateRequired, validatePhone, validateAge, validateEmail, validateName, clearErrors } = useValidation();
 
 const newAppointment = reactive({
     date: '',
@@ -315,16 +339,25 @@ const openScheduleModal = (patient) => {
     newAppointment.time = '';
     newAppointment.type = 'Check-up';
     newAppointment.description = '';
+    clearErrors();
     showScheduleModal.value = true;
 };
 
 const closeScheduleModal = () => {
     showScheduleModal.value = false;
     selectedPatientForSchedule.value = null;
+    clearErrors();
 };
 
 const submitAppointment = () => {
     if (!selectedPatientForSchedule.value) return;
+
+    // Validation
+    const isDateValid = validateRequired('apptDate', newAppointment.date, 'Appointment Date');
+    const isTimeValid = validateRequired('apptTime', newAppointment.time, 'Appointment Time');
+    const isReasonValid = validateRequired('apptReason', newAppointment.description, 'Reason');
+
+    if (!isDateValid || !isTimeValid || !isReasonValid) return;
 
     const dateObj = new Date(newAppointment.date);
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -338,6 +371,7 @@ const submitAppointment = () => {
 
     const appointment = {
         id: appointments.value.length + 1, // Simple ID generation
+        patientId: selectedPatientForSchedule.value.id,
         patientName: selectedPatientForSchedule.value.name,
         patientAge: selectedPatientForSchedule.value.age,
         status: 'Pending',
@@ -357,7 +391,6 @@ const submitAppointment = () => {
 
     addAppointment(appointment);
     closeScheduleModal();
-    // Optional: Notify success
 };
 
 const newPatient = reactive({
@@ -380,14 +413,25 @@ const openPatientModal = () => {
         conditionsInput: '',
         status: 'Active'
     });
+    clearErrors();
     showPatientModal.value = true;
 };
 
 const closePatientModal = () => {
     showPatientModal.value = false;
+    clearErrors();
 };
 
 const submitPatient = () => {
+    // Strict Validation
+    const isNameValid = validateName('name', newPatient.name, 'Full Name');
+    const isAgeValid = validateAge('age', newPatient.age);
+    const isGenderValid = validateRequired('gender', newPatient.gender, 'Gender');
+    const isPhoneValid = validatePhone('phone', newPatient.phone);
+    const isEmailValid = validateEmail('email', newPatient.email);
+
+    if (!isNameValid || !isAgeValid || !isGenderValid || !isPhoneValid || !isEmailValid) return;
+
     const conditionsArray = newPatient.conditionsInput.split(',').map(c => c.trim()).filter(c => c);
     
     // Calculate a random future date for "Next Appointment" for demo
@@ -396,7 +440,7 @@ const submitPatient = () => {
     const nextAppt = futureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     const patient = {
-        id: patients.value.length + 1,
+        id: Date.now(), // Unique ID
         name: newPatient.name,
         age: newPatient.age,
         gender: newPatient.gender,
@@ -408,84 +452,9 @@ const submitPatient = () => {
         nextAppointment: nextAppt
     };
 
-    patients.value.unshift(patient);
+    addPatient(patient);
     closePatientModal();
 };
-
-const patients = ref([
-    {
-        id: 1,
-        name: 'John Martinez',
-        age: 45,
-        gender: 'Male',
-        status: 'Active',
-        lastVisit: 'Dec 5, 2025',
-        phone: '(555) 123-4567',
-        email: 'john.martinez@email.com',
-        conditions: ['Hypertension', 'Type 2 Diabetes'],
-        nextAppointment: 'Dec 15, 2025'
-    },
-    {
-        id: 2,
-        name: 'Emily Johnson',
-        age: 32,
-        gender: 'Female',
-        status: 'Active',
-        lastVisit: 'Dec 4, 2025',
-        phone: '(555) 234-5678',
-        email: 'emily.johnson@email.com',
-        conditions: ['Seasonal Allergies'],
-        nextAppointment: 'Dec 10, 2025'
-    },
-    {
-        id: 3,
-        name: 'Michael Brown',
-        age: 58,
-        gender: 'Male',
-        status: 'Active',
-        lastVisit: 'Dec 3, 2025',
-        phone: '(555) 345-6789',
-        email: 'michael.brown@email.com',
-        conditions: ['Hypertension', 'High Cholesterol'],
-        nextAppointment: 'Dec 18, 2025'
-    },
-    {
-        id: 4,
-        name: 'Sarah Davis',
-        age: 41,
-        gender: 'Female',
-        status: 'Active',
-        lastVisit: 'Nov 28, 2025',
-        phone: '(555) 456-7890',
-        email: 'sarah.davis@email.com',
-        conditions: ['Asthma'],
-        nextAppointment: 'Dec 20, 2025'
-    },
-    {
-        id: 5,
-        name: 'Robert Wilson',
-        age: 67,
-        gender: 'Male',
-        status: 'Active',
-        lastVisit: 'Dec 1, 2025',
-        phone: '(555) 567-8901',
-        email: 'robert.wilson@email.com',
-        conditions: ['Type 2 Diabetes', 'Hypertension', 'High Cholesterol'],
-        nextAppointment: 'Jan 5, 2026'
-    },
-    {
-        id: 6,
-        name: 'Jessica Lee',
-        age: 29,
-        gender: 'Female',
-        status: 'Active',
-        lastVisit: 'Dec 7, 2025',
-        phone: '(555) 678-9012',
-        email: 'jessica.lee@email.com',
-        conditions: [],
-        nextAppointment: 'Dec 28, 2025'
-    }
-]);
 
 const activePatientsCount = computed(() => patients.value.filter(p => p.status === 'Active').length);
 const inactivePatientsCount = computed(() => patients.value.length - activePatientsCount.value);

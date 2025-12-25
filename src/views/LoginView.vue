@@ -7,8 +7,11 @@ import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import SocialAuthButtons from '../components/auth/SocialAuthButtons.vue'
 import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
+import { useUserStore } from '../stores/userStore'
 
 const router = useRouter()
+const { login } = useUserStore()
+
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
@@ -49,9 +52,12 @@ const handleLogin = () => {
        toast.success("Welcome, Administrator", {
           transition: toast.TRANSITIONS.ZOOM,
        })
-       localStorage.setItem('isAuthenticated', 'true')
-       localStorage.setItem('userRole', 'admin')
-       localStorage.setItem('userName', 'Administrator')
+       
+       login({
+           name: 'Administrator',
+           email: email.value,
+           role: 'admin'
+       })
        
        setTimeout(() => {
            router.push('/admin/dashboard')
@@ -70,13 +76,13 @@ const handleLogin = () => {
       return
     }
     
-    // Store auth state for User
-    // Store auth state for User
-    localStorage.setItem('isAuthenticated', 'true')
     const role = user.role || 'patient'
-    localStorage.setItem('userRole', role)
-    localStorage.setItem('userEmail', email.value)
-    localStorage.setItem('userName', user.fullName)
+    
+    login({
+        name: user.fullName,
+        email: email.value,
+        role: role
+    })
     
     toast.success(`Welcome back, ${user.fullName}!`, {
         transition: toast.TRANSITIONS.ZOOM,

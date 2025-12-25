@@ -1,14 +1,15 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import AuthLayout from '../components/layout/AuthLayout.vue'
 import BaseInput from '../components/ui/BaseInput.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
-import SocialAuthButtons from '../components/auth/SocialAuthButtons.vue'
+import { useValidation } from '../composables/useValidation'
 import { UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, PhoneIcon, CalendarDaysIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
+const { errors, validateName, validateEmail, validatePhone, validateDOB, validateRequired, clearErrors } = useValidation()
 
 const fullName = ref('')
 const email = ref('')
@@ -20,61 +21,60 @@ const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
-const errors = ref({})
+
+// Real-time validation
+watch(fullName, (val) => validateName('fullName', val, 'Full Name'))
+watch(email, (val) => validateEmail('email', val))
+watch(phone, (val) => validatePhone('phone', val))
+watch(dob, (val) => validateDOB('dob', val))
+watch(gender, (val) => validateRequired('gender', val, 'Gender'))
+watch(role, (val) => validateRequired('role', val, 'Account Type'))
 
 const validate = () => {
-  errors.value = {}
-  
-  if (!fullName.value) {
-    errors.value.fullName = 'Full Name is required'
-  } else if (!/^[A-Za-z\s]+$/.test(fullName.value)) {
-    errors.value.fullName = 'Full Name must contain letters only'
-  }
+  const isNameValid = validateName('fullName', fullName.value, 'Full Name')
+  const isEmailValid = validateEmail('email', email.value)
+  const isPhoneValid = validatePhone('phone', phone.value)
+  const isDobValid = validateDOB('dob', dob.value)
+  const isGenderValid = validateRequired('gender', gender.value, 'Gender')
+  const isRoleValid = validateRequired('role', role.value, 'Account Type')
 
-  const emailRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+@[a-zA-Z]+\.com$/
-  if (!email.value) {
-    errors.value.email = 'Email address is required'
-  } else if (!emailRegex.test(email.value)) {
-    errors.value.email = 'Email must contain letters AND numbers before @, and end in .com (e.g., user123@gmail.com)'
-  }
-
-  if (!phone.value) {
-    errors.value.phone = 'Phone number is required'
-  }
-
-  if (!dob.value) {
-    errors.value.dob = 'Date of birth is required'
-  }
-
-  if (!gender.value) {
-    errors.value.gender = 'Gender is required'
-  }
-
-  if (!role.value) {
-    errors.value.role = 'Account Type is required'
-  }
-
+  // Password local validation (as it has specific project requirements)
+  let isPasswordValid = true
   if (!password.value) {
     errors.value.password = 'Password is required'
+    isPasswordValid = false
   } else if (password.value.length < 8) {
     errors.value.password = 'Password must be at least 8 characters'
+    isPasswordValid = false
   } else if (!/[A-Z]/.test(password.value)) {
     errors.value.password = 'Password must contain at least one uppercase letter'
+    isPasswordValid = false
   } else if (!/[a-z]/.test(password.value)) {
     errors.value.password = 'Password must contain at least one lowercase letter'
+    isPasswordValid = false
   } else if (!/\d/.test(password.value)) {
     errors.value.password = 'Password must contain at least one number'
+    isPasswordValid = false
   } else if (!/[!@#$%^&*]/.test(password.value)) {
     errors.value.password = 'Password must contain at least one symbol (!@#$%^&*)'
+    isPasswordValid = false
+  } else {
+    delete errors.value.password
   }
 
+  let isConfirmValid = true
   if (!confirmPassword.value) {
     errors.value.confirmPassword = 'Please confirm your password'
+    isConfirmValid = false
   } else if (confirmPassword.value !== password.value) {
     errors.value.confirmPassword = 'Passwords do not match'
+    isConfirmValid = false
+  } else {
+    delete errors.value.confirmPassword
   }
   
-  const isValid = Object.keys(errors.value).length === 0
+  const isValid = isNameValid && isEmailValid && isPhoneValid && isDobValid && isGenderValid && isRoleValid && isPasswordValid && isConfirmValid
+  
   if (!isValid) {
       const firstError = Object.values(errors.value)[0]
       toast.error(firstError)
@@ -97,13 +97,13 @@ const handleRegister = () => {
       email: email.value,
       phone: phone.value,
       dob: dob.value,
-      dob: dob.value,
       gender: gender.value,
       role: role.value,
       password: password.value
     })
     localStorage.setItem('registeredUsers', JSON.stringify(users))
     
+    // Clear session data to ensure a fresh start for the new user
     const keysToClear = [
       'medivia_appointments',
       'medivia_visits',

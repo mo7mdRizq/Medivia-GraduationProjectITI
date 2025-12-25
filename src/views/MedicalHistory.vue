@@ -3,29 +3,15 @@ import { ref, computed } from 'vue'
 import AddMedicalHistoryModal from '../components/AddMedicalHistoryModal.vue'
 import Swal from 'sweetalert2'
 import { generatePDF } from '../utils/pdfGenerator'
+import { medicalHistory, addMedicalHistory } from '../stores/medicalHistoryStore'
 
 const showModal = ref(false)
-
 const query = ref('')
-const STORAGE_KEY = 'medivia_medical_history'
-
-const getStoredItems = () => {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return stored ? JSON.parse(stored) : []
-}
-
-const items = ref(getStoredItems())
-
-// Save to localStorage whenever items change
-import { watch } from 'vue'
-watch(items, (newVal) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
-}, { deep: true })
 
 const filteredItems = computed(() => {
   const q = query.value.toLowerCase()
-  if (!q) return items.value
-  return items.value.filter(item =>
+  if (!q) return medicalHistory.value
+  return medicalHistory.value.filter(item =>
     item.type.toLowerCase().includes(q) ||
     item.title.toLowerCase().includes(q) ||
     item.doctor.toLowerCase().includes(q) ||
@@ -38,7 +24,7 @@ const toggleExpand = (item) => {
 }
 
 const handleAddHistory = (newRecord) => {
-  items.value.unshift(newRecord)
+  addMedicalHistory(newRecord)
   Swal.fire({
     title: 'Record Added!',
     text: 'History record successfully added.',

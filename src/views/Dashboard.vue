@@ -1,15 +1,18 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import BookAppointmentModal from '../components/BookAppointmentModal.vue'
 import Swal from 'sweetalert2'
+import { useUserStore } from '../stores/userStore'
 import { 
   addAppointment, 
+  appointments,
   pendingCount as appointmentsPendingCount 
 } from '../stores/appointmentsStore'
 import { totalTests } from '../stores/labResultsStore'
 import { activeCount as activePrescriptionsCount } from '../stores/prescriptionsStore'
 import { totalVisits } from '../stores/visitsStore'
+import { vitals } from '../stores/vitalsStore'
 import { 
   Chart, 
   LineController, 
@@ -37,6 +40,7 @@ Chart.register(
 )
 
 const router = useRouter()
+const { currentUser, loadFromStorage } = useUserStore()
 const showBookingModal = ref(false)
 
 // Canvas Refs
@@ -46,17 +50,52 @@ const glucoseChartCanvas = ref(null)
 let bpChart = null
 let glucoseChart = null
 
-// Brand Colors (Matching the Indigo/Purple theme from your screenshot)
+// Brand Colors
 const BRAND_INDIGO = '#5A4FF3'
 const BRAND_PURPLE = '#8B5CF6'
 const BRAND_SKY = '#3B82F6'
 
-// Chart Data
-const chartLabels = ['Nov 1', 'Nov 8', 'Nov 15', 'Nov 22', 'Nov 29', 'Dec 6']
+// Chart Computed Data
+const chartLabels = computed(() => {
+    // If no vitals, just show some default labels or empty
+    if (vitals.value.bp.length === 0) return ['No Data'];
+    return vitals.value.bp.map(r => r.date);
+});
 
-// Blood Pressure Data
-const bpData = []
-const glucoseData = []
+const latestBP = computed(() => {
+    if (vitals.value.bp.length === 0) return { systolic: '--', diastolic: '--' };
+    return vitals.value.bp[vitals.value.bp.length - 1];
+});
+
+const latestGlucose = computed(() => {
+    if (vitals.value.glucose.length === 0) return '--';
+    return vitals.value.glucose[vitals.value.glucose.length - 1].fasting;
+});
+
+const avgSystolic = computed(() => {
+    if (vitals.value.bp.length === 0) return 0;
+    const sum = vitals.value.bp.reduce((acc, r) => acc + r.systolic, 0);
+    return (sum / vitals.value.bp.length).toFixed(1);
+});
+
+const avgDiastolic = computed(() => {
+    if (vitals.value.bp.length === 0) return 0;
+    const sum = vitals.value.bp.reduce((acc, r) => acc + r.diastolic, 0);
+    return (sum / vitals.value.bp.length).toFixed(1);
+});
+
+const avgFastingGlucose = computed(() => {
+    if (vitals.value.glucose.length === 0) return 0;
+    const sum = vitals.value.glucose.reduce((acc, r) => acc + r.fasting, 0);
+    return (sum / vitals.value.glucose.length).toFixed(1);
+});
+
+const avgPostMealGlucose = computed(() => {
+    if (vitals.value.glucose.length === 0) return 0;
+    const sum = vitals.value.glucose.reduce((acc, r) => acc + r.postMeal, 0);
+    return (sum / vitals.value.glucose.length).toFixed(1);
+});
+
 
 const initCharts = () => {
   // BP Chart
@@ -73,11 +112,11 @@ const initCharts = () => {
     bpChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: chartLabels,
+        labels: chartLabels.value,
         datasets: [
           {
             label: 'Systolic',
-            data: bpData.map(d => d.systolic),
+            data: vitals.value.bp.map(d => d.systolic),
             borderColor: BRAND_INDIGO,
             backgroundColor: gradient1,
             fill: true,
@@ -89,7 +128,7 @@ const initCharts = () => {
           },
           {
             label: 'Diastolic',
-            data: bpData.map(d => d.diastolic),
+            data: vitals.value.bp.map(d => d.diastolic),
             borderColor: BRAND_SKY,
             backgroundColor: gradient2,
             fill: true,
@@ -122,7 +161,7 @@ const initCharts = () => {
         scales: {
           y: {
             min: 60,
-            max: 160,
+            max: 180,
             grid: { color: '#f1f5f9' },
             ticks: { color: '#94a3b8', font: { size: 11 } }
           },
@@ -149,11 +188,11 @@ const initCharts = () => {
     glucoseChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: chartLabels,
+        labels: chartLabels.value,
         datasets: [
           {
             label: 'Fasting',
-            data: glucoseData.map(d => d.fasting),
+            data: vitals.value.glucose.map(d => d.fasting),
             borderColor: BRAND_PURPLE,
             backgroundColor: gradient1,
             fill: true,
@@ -165,7 +204,7 @@ const initCharts = () => {
           },
           {
             label: 'Post-Meal',
-            data: glucoseData.map(d => d.postMeal),
+            data: vitals.value.glucose.map(d => d.postMeal),
             borderColor: BRAND_INDIGO,
             backgroundColor: gradient2,
             fill: true,
@@ -196,7 +235,7 @@ const initCharts = () => {
         scales: {
           y: {
             min: 60,
-            max: 160,
+            max: 200,
             grid: { color: '#f1f5f9' },
             ticks: { color: '#94a3b8', font: { size: 11 } }
           },
@@ -211,6 +250,7 @@ const initCharts = () => {
 }
 
 onMounted(() => {
+  loadFromStorage()
   initCharts()
 })
 
@@ -220,7 +260,12 @@ onUnmounted(() => {
 })
 
 const handleBookAppointment = (newAppointment) => {
-  addAppointment(newAppointment)
+  addAppointment({
+      ...newAppointment,
+      id: Date.now(),
+      status: 'Pending',
+      category: 'pending'
+  })
   Swal.fire({
     title: 'Appointment Booked!',
     text: `Your appointment with ${newAppointment.doctor} on ${newAppointment.date} has been scheduled.`,
@@ -240,7 +285,7 @@ const handleBookAppointment = (newAppointment) => {
     <!-- Welcome Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome back, John</h1>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome back, {{ currentUser.name }}</h1>
         <p class="text-slate-500 mt-1 font-medium">Here's your latest health activity overview.</p>
       </div>
       <button @click="showBookingModal = true" class="flex items-center justify-center gap-2 rounded-2xl bg-[#5A4FF3] px-7 py-4 text-white font-bold hover:bg-[#4F46E5] transition-all shadow-xl shadow-indigo-600/20 active:scale-95">
@@ -328,8 +373,8 @@ const handleBookAppointment = (newAppointment) => {
             </div>
           </div>
           <div class="text-right">
-            <div class="text-3xl font-black text-[#5A4FF3]">118/78</div>
-            <div class="text-[10px] font-black bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full uppercase inline-block">Optimal</div>
+            <div class="text-3xl font-black text-[#5A4FF3]">{{ latestBP.systolic }}/{{ latestBP.diastolic }}</div>
+            <div class="text-[10px] font-black bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full uppercase inline-block">Values</div>
           </div>
         </div>
 
@@ -343,14 +388,14 @@ const handleBookAppointment = (newAppointment) => {
               <div class="h-2 w-2 rounded-full bg-[#5A4FF3]"></div>
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg Systolic</span>
             </div>
-            <div class="text-2xl font-black text-slate-900">126.7 <span class="text-xs font-bold text-slate-400">mmHg</span></div>
+            <div class="text-2xl font-black text-slate-900">{{ avgSystolic }} <span class="text-xs font-bold text-slate-400">mmHg</span></div>
           </div>
           <div class="p-6 rounded-3xl bg-slate-50/50 border border-slate-100 flex flex-col gap-1">
             <div class="flex items-center gap-2">
               <div class="h-2 w-2 rounded-full bg-[#3B82F6]"></div>
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg Diastolic</span>
             </div>
-            <div class="text-2xl font-black text-slate-900">82.6 <span class="text-xs font-bold text-slate-400">mmHg</span></div>
+            <div class="text-2xl font-black text-slate-900">{{ avgDiastolic }} <span class="text-xs font-bold text-slate-400">mmHg</span></div>
           </div>
         </div>
       </div>
@@ -370,8 +415,8 @@ const handleBookAppointment = (newAppointment) => {
             </div>
           </div>
           <div class="text-right">
-            <div class="text-3xl font-black text-purple-600">88</div>
-            <div class="text-[10px] font-black bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full uppercase inline-block">Normal</div>
+            <div class="text-3xl font-black text-purple-600">{{ latestGlucose }}</div>
+            <div class="text-[10px] font-black bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full uppercase inline-block">Value</div>
           </div>
         </div>
 
@@ -385,14 +430,14 @@ const handleBookAppointment = (newAppointment) => {
               <div class="h-2 w-2 rounded-full bg-purple-600"></div>
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg Fasting</span>
             </div>
-            <div class="text-2xl font-black text-slate-900">92.8 <span class="text-xs font-bold text-slate-400">mg/dL</span></div>
+            <div class="text-2xl font-black text-slate-900">{{ avgFastingGlucose }} <span class="text-xs font-bold text-slate-400">mg/dL</span></div>
           </div>
           <div class="p-6 rounded-3xl bg-slate-50/50 border border-slate-100 flex flex-col gap-1">
             <div class="flex items-center gap-2">
               <div class="h-2 w-2 rounded-full bg-[#5A4FF3]"></div>
               <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg Post-Meal</span>
             </div>
-            <div class="text-2xl font-black text-slate-900">126.5 <span class="text-xs font-bold text-slate-400">mg/dL</span></div>
+            <div class="text-2xl font-black text-slate-900">{{ avgPostMealGlucose }} <span class="text-xs font-bold text-slate-400">mg/dL</span></div>
           </div>
         </div>
       </div>

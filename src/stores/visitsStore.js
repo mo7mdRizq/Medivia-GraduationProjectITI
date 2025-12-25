@@ -1,20 +1,27 @@
-import { ref, computed, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const STORAGE_KEY = 'medivia_visits'
 
-const defaultVisits = []
-
+// Load from localStorage or use empty array
 const getStoredVisits = () => {
     const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : defaultVisits
+    return stored ? JSON.parse(stored) : []
 }
 
+// Shared visits state
 export const visits = ref(getStoredVisits())
 
+// Watch for changes and save to localStorage
 watch(visits, (newVal) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
 }, { deep: true })
 
+// Helper function to add a new visit
+export const addVisit = (newVisit) => {
+    visits.value.unshift(newVisit)
+}
+
+// Stats for dashboard and visits view
 export const totalVisits = computed(() => visits.value.length)
 
 export const recentVisitsCount = computed(() => {
@@ -28,6 +35,3 @@ export const uniqueProvidersCount = computed(() => {
     return providers.size
 })
 
-export const addVisit = (newVisit) => {
-    visits.value.unshift(newVisit)
-}

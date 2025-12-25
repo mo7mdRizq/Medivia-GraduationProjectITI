@@ -9,7 +9,7 @@
     <!-- Profile Card (Avatar & Basic Info) -->
     <div class="bg-white rounded-xl border border-gray-100 p-6 flex items-center space-x-6 shadow-sm">
         <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold relative">
-            SC
+            {{ (currentUser.name && currentUser.name.split(' ').length > 1) ? (currentUser.name.split(' ')[0][0] + currentUser.name.split(' ')[1][0]) : 'DR' }}
             <div class="absolute bottom-0 right-0 w-6 h-6 bg-white rounded-full flex items-center justify-center border border-gray-100 shadow-sm cursor-pointer hover:bg-gray-50">
                  <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
@@ -18,7 +18,7 @@
             </div>
         </div>
         <div>
-            <h3 class="text-lg font-bold text-gray-900">Dr. Sarah Chen, MD, FACC</h3>
+            <h3 class="text-lg font-bold text-gray-900">{{ profile.firstName }} {{ profile.lastName }}, {{ profile.title }}</h3>
             <p class="text-gray-500 text-sm">Cardiologist</p>
             <button class="text-blue-600 text-xs font-semibold mt-2 hover:underline flex items-center">
                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,11 +53,19 @@
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">First Name</label>
-                <input v-model="profile.firstName" :disabled="!isEditing.personal" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors disabled:text-gray-500 disabled:cursor-not-allowed">
+                <input v-model="profile.firstName" :disabled="!isEditing.personal" type="text" 
+                    @input="validateRequired('firstName', profile.firstName)"
+                    class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors disabled:text-gray-500 disabled:cursor-not-allowed"
+                    :class="{'border-red-500 focus:border-red-500': errors.firstName}">
+                <p v-if="errors.firstName" class="text-xs text-red-500 mt-1">{{ errors.firstName }}</p>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Last Name</label>
-                <input v-model="profile.lastName" :disabled="!isEditing.personal" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors disabled:text-gray-500 disabled:cursor-not-allowed">
+                <input v-model="profile.lastName" :disabled="!isEditing.personal" type="text" 
+                    @input="validateRequired('lastName', profile.lastName)"
+                    class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors disabled:text-gray-500 disabled:cursor-not-allowed"
+                    :class="{'border-red-500 focus:border-red-500': errors.lastName}">
+                <p v-if="errors.lastName" class="text-xs text-red-500 mt-1">{{ errors.lastName }}</p>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Professional Title</label>
@@ -102,11 +110,19 @@
          <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Email Address</label>
-                <input v-model="profile.email" :disabled="!isEditing.contact" type="email" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-green-500 focus:bg-white transition-colors disabled:text-gray-500 disabled:cursor-not-allowed">
+                <input v-model="profile.email" :disabled="!isEditing.contact" type="email" 
+                    @input="validateEmail('email', profile.email)"
+                    class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-green-500 focus:bg-white transition-colors disabled:text-gray-500 disabled:cursor-not-allowed"
+                    :class="{'border-red-500 focus:border-red-500': errors.email}">
+                <p v-if="errors.email" class="text-xs text-red-500 mt-1">{{ errors.email }}</p>
             </div>
-             <div>
+            <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Mobile Phone</label>
-                <input v-model="profile.phone" :disabled="!isEditing.contact" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-green-500 focus:bg-white transition-colors disabled:text-gray-500 disabled:cursor-not-allowed">
+                <input v-model="profile.phone" :disabled="!isEditing.contact" type="text" 
+                    @input="validatePhone('phone', profile.phone)"
+                    class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-green-500 focus:bg-white transition-colors disabled:text-gray-500 disabled:cursor-not-allowed"
+                     :class="{'border-red-500 focus:border-red-500': errors.phone}">
+                <p v-if="errors.phone" class="text-xs text-red-500 mt-1">{{ errors.phone }}</p>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Office Phone</label>
@@ -193,7 +209,12 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
+import { useUserStore } from '../stores/userStore';
+import { useValidation } from '../composables/useValidation';
+
+const { currentUser, login } = useUserStore();
+const { errors, validateRequired, validateEmail, validatePhone, clearErrors } = useValidation();
 
 const isEditing = reactive({
     personal: false,
@@ -203,31 +224,111 @@ const isEditing = reactive({
 });
 
 const profile = reactive({
-    firstName: 'Sarah',
-    lastName: 'Chen',
-    title: 'MD, FACC',
-    specialty: 'Cardiologist',
-    license: 'CA-12345-2015',
-    bio: 'Board-certified cardiologist with over 15 years of experience in cardiovascular medicine and preventive cardiology.',
-    email: 'dr.sarah.chen@medicalpractice.com',
-    phone: '(555) 123-4567',
-    officePhone: '(555) 987-6543',
-    address: '123 Medical Center Dr. Suite 400',
-    city: 'San Francisco',
-    state: 'CA',
-    zip: '94102',
-    education: 'Harvard Medical School, MD',
-    experience: '15 years',
-    certifications: 'American Board of Internal Medicine - Cardiovascular Disease',
-    languages: 'English, Mandarin, Spanish'
+    firstName: '',
+    lastName: '',
+    title: '',
+    specialty: '',
+    license: '',
+    bio: '',
+    email: '',
+    phone: '',
+    officePhone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    education: '',
+    experience: '',
+    certifications: '',
+    languages: ''
 });
 
-const toggleEdit = (section) => {
-    // If we were editing, now we are saving
-    if (isEditing[section]) {
-        // Logic to simulate save (API call would go here)
-        console.log(`Saved ${section}:`, profile);
+// Initialize profile from userStore
+const initProfile = () => {
+    if (currentUser.value) {
+        if (currentUser.value.name) {
+            const names = currentUser.value.name.split(' ');
+            profile.firstName = names[0] || '';
+            profile.lastName = names.slice(1).join(' ') || '';
+        }
+        profile.email = currentUser.value.email || '';
+        
+        // Load other fields if they exist in store
+        profile.title = currentUser.value.title || '';
+        profile.specialty = currentUser.value.specialty || '';
+        profile.license = currentUser.value.license || '';
+        profile.bio = currentUser.value.bio || '';
+        profile.phone = currentUser.value.phone || '';
+        profile.officePhone = currentUser.value.officePhone || '';
+        profile.address = currentUser.value.address || '';
+        profile.city = currentUser.value.city || '';
+        profile.state = currentUser.value.state || '';
+        profile.zip = currentUser.value.zip || '';
+        profile.education = currentUser.value.education || '';
+        profile.experience = currentUser.value.experience || '';
+        profile.certifications = currentUser.value.certifications || '';
+        profile.languages = currentUser.value.languages || '';
     }
+};
+
+onMounted(() => {
+    initProfile();
+});
+
+// Watch current user to update profile if store changes externally
+watch(() => currentUser.value, () => {
+   initProfile();
+}, { deep: true });
+
+
+const toggleEdit = (section) => {
+    clearErrors();
+    
+    // If we are currently editing this section, we are trying to SAVE
+    if (isEditing[section]) {
+        let isValid = true;
+
+        if (section === 'personal') {
+             const isFirstValid = validateRequired('firstName', profile.firstName);
+             const isLastValid = validateRequired('lastName', profile.lastName);
+             isValid = isFirstValid && isLastValid;
+        } else if (section === 'contact') {
+            const isEmailValid = validateEmail('email', profile.email);
+            // Phone is optional or required? Validating format if present
+            const isPhoneValid = profile.phone ? validatePhone('phone', profile.phone) : true;
+            isValid = isEmailValid && isPhoneValid;
+        }
+        
+        if (!isValid) return;
+
+        // Save to Store
+        // We construct the full name for the 'name' field which is used by auth
+        const fullName = `${profile.firstName} ${profile.lastName}`.trim();
+        
+        const updatedUser = {
+            ...currentUser.value,
+            name: fullName,
+            email: profile.email,
+            // Save all other profile fields
+            title: profile.title,
+            specialty: profile.specialty,
+            license: profile.license,
+            bio: profile.bio,
+            phone: profile.phone,
+            officePhone: profile.officePhone,
+            address: profile.address,
+            city: profile.city,
+            state: profile.state,
+            zip: profile.zip,
+            education: profile.education,
+            experience: profile.experience,
+            certifications: profile.certifications,
+            languages: profile.languages
+        };
+
+        login(updatedUser);
+    }
+    
     isEditing[section] = !isEditing[section];
 };
 </script>
