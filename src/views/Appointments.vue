@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import BookAppointmentModal from '../components/BookAppointmentModal.vue'
 import Swal from 'sweetalert2'
-import { appointments, addAppointment, upcomingCount, pendingCount, pastCount, totalAppointments } from '../stores/appointmentsStore'
+import { appointments, addAppointment, removeAppointment, upcomingCount, pendingCount, pastCount, totalAppointments } from '../stores/appointmentsStore'
 
 const showModal = ref(false)
 const query = ref('')
@@ -86,7 +86,7 @@ const cancelAppointment = async (apt) => {
   })
 
   if (result.isConfirmed) {
-    appointments.value = appointments.value.filter(a => a.id !== apt.id)
+    removeAppointment(apt.id)
     Swal.fire(
       'Cancelled!',
       'Your appointment has been cancelled.',

@@ -38,7 +38,63 @@ const filteredUsers = computed(() => {
   })
 })
 
+import { useDoctorsStore } from '../../stores/doctorsStore'
+import { toast } from 'vue3-toastify'
+
+const { addDoctor } = useDoctorsStore()
+
+// ... (existing refs)
+
+const showAddModal = ref(false)
+const newUser = ref({
+  name: '',
+  email: '',
+  role: 'Patient',
+  specialty: '' // Only for doctors
+})
+
+const openAddModal = () => {
+  newUser.value = { name: '', email: '', role: 'Patient', specialty: '' }
+  showAddModal.value = true
+}
+
+const handleAddUser = () => {
+    if (!newUser.value.name || !newUser.value.email) {
+        toast.error('Name and Email are required')
+        return
+    }
+    
+    // Add to Users List (localStorage)
+    const storedUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+    storedUsers.push({
+        fullName: newUser.value.name,
+        email: newUser.value.email,
+        role: newUser.value.role.toLowerCase()
+    })
+    localStorage.setItem('registeredUsers', JSON.stringify(storedUsers))
+    
+    // If Doctor, add to Doctors Store
+    if (newUser.value.role === 'Doctor') {
+        if (!newUser.value.specialty) {
+            toast.error('Specialty is required for doctors')
+            return
+        }
+        addDoctor({
+            name: newUser.value.name,
+            specialty: newUser.value.specialty,
+            email: newUser.value.email
+        })
+    }
+    
+    // Refresh local list
+    users.value = getRegisteredUsers()
+    
+    toast.success('User added successfully')
+    showAddModal.value = false
+}
+
 const roles = ['All Roles', 'Admin', 'Doctor', 'Patient', 'Staff']
+const formRoles = ['Admin', 'Doctor', 'Patient', 'Staff']
 </script>
 
 <template>
@@ -50,7 +106,7 @@ const roles = ['All Roles', 'Admin', 'Doctor', 'Patient', 'Staff']
         <p class="mt-1 text-sm text-gray-500">Manage user access and permissions.</p>
       </div>
       <div class="mt-4 sm:mt-0">
-        <BaseButton variant="primary">
+        <BaseButton variant="primary" @click="openAddModal">
           Add New User
         </BaseButton>
       </div>
@@ -184,7 +240,42 @@ const roles = ['All Roles', 'Admin', 'Doctor', 'Patient', 'Staff']
             </nav>
           </div>
         </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div v-if="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showAddModal = false"></div>
+      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <h2 class="text-xl font-bold mb-4">Add New User</h2>
+          
+          <div class="space-y-4">
+              <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <input v-model="newUser.name" type="text" class="w-full rounded-lg border-gray-300 focus:border-brand-500 focus:ring-brand-500">
+              </div>
+              
+               <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input v-model="newUser.email" type="email" class="w-full rounded-lg border-gray-300 focus:border-brand-500 focus:ring-brand-500">
+              </div>
+              
+               <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <select v-model="newUser.role" class="w-full rounded-lg border-gray-300 focus:border-brand-500 focus:ring-brand-500">
+                      <option v-for="role in formRoles" :key="role">{{ role }}</option>
+                  </select>
+              </div>
+
+               <div v-if="newUser.role === 'Doctor'">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Specialty</label>
+                  <input v-model="newUser.specialty" type="text" placeholder="e.g. Cardiology" class="w-full rounded-lg border-gray-300 focus:border-brand-500 focus:ring-brand-500">
+              </div>
+          </div>
+          
+          <div class="mt-6 flex justify-end gap-3">
+              <button @click="showAddModal = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+              <button @click="handleAddUser" class="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">Add User</button>
+          </div>
       </div>
-    </div>
   </div>
 </template>

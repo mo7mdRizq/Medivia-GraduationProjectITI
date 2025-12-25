@@ -47,10 +47,21 @@ export const useUserStore = () => {
         }
     };
 
+    const updateUser = (updates) => {
+        if (currentUser.value.isAuthenticated) {
+            currentUser.value = { ...currentUser.value, ...updates };
+            if (updates.name) localStorage.setItem('userName', updates.name);
+            if (updates.email) localStorage.setItem('userEmail', updates.email);
+            if (updates.role) localStorage.setItem('userRole', updates.role);
+        }
+    };
+
     return {
         currentUser,
         login,
         logout,
-        loadFromStorage
+        logout,
+        loadFromStorage,
+        updateUser
     };
 };

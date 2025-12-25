@@ -16,6 +16,13 @@ const {
 
 onMounted(() => {
   loadProfile()
+  // If profile name is empty but user is logged in, sync from user
+  if ((!personalInfo.value.firstName && !personalInfo.value.lastName) && currentUser.value.name !== 'Guest') {
+      const parts = currentUser.value.name.split(' ')
+      personalInfo.value.firstName = parts[0]
+      personalInfo.value.lastName = parts.slice(1).join(' ')
+      personalInfo.value.email = currentUser.value.email
+  }
 })
 
 const saveProfileToLocal = () => {
@@ -55,6 +62,13 @@ const cancelEditingPersonal = () => {
 }
 const savePersonal = () => {
   saveProfileToLocal()
+  // Sync with UserStore
+  const { updateUser } = useUserStore()
+  const fullName = `${personalInfo.value.firstName} ${personalInfo.value.lastName}`.trim()
+  updateUser({ 
+    name: fullName,
+    email: personalInfo.value.email 
+  })
   isEditingPersonal.value = false
 }
 
