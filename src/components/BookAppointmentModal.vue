@@ -15,12 +15,10 @@ const formData = ref({
   notes: ''
 })
 
-const doctors = [
-  'Dr. Sarah Johnson (Cardiology)',
-  'Dr. Michael Chen (Primary Care)',
-  'Dr. Emily Rodriguez (Dermatology)',
-  'Dr. James Park (Orthopedics)'
-]
+import { useDoctorsStore } from '../stores/doctorsStore'
+
+const { getDoctorOptions } = useDoctorsStore()
+const doctors = getDoctorOptions()
 
 const types = [
   'General Consultation',
