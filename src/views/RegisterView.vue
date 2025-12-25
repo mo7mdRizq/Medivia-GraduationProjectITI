@@ -25,39 +25,59 @@ const errors = ref({})
 const validate = () => {
   errors.value = {}
   
+  // Full Name
   if (!fullName.value) {
-    errors.value.fullName = 'Full Name is required'
+    errors.value.fullName = 'Please enter your full name'
   } else if (!/^[A-Za-z\s]+$/.test(fullName.value)) {
-    errors.value.fullName = 'Full Name must contain letters only'
+    errors.value.fullName = 'Full name should only contain letters and spaces'
   }
 
+  // Email
   const emailRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+@[a-zA-Z]+\.com$/
   if (!email.value) {
-    errors.value.email = 'Email address is required'
+    errors.value.email = 'Please enter your email address'
   } else if (!emailRegex.test(email.value)) {
-    errors.value.email = 'Email must contain letters AND numbers before @, and end in .com (e.g., user123@gmail.com)'
+    errors.value.email = 'Email must contain letters AND numbers before @, and end in .com'
   }
 
+  // Phone: Allow digits, spaces, dashes, parens, plus. Min 10 chars.
+  const phoneRegex = /^[\d\s\+\-\(\)]{10,}$/
   if (!phone.value) {
-    errors.value.phone = 'Phone number is required'
+    errors.value.phone = 'Please enter your phone number'
+  } else if (!phoneRegex.test(phone.value)) {
+    errors.value.phone = 'Please enter a valid phone number (at least 10 digits)'
   }
 
+  // Date of Birth
   if (!dob.value) {
-    errors.value.dob = 'Date of birth is required'
+    errors.value.dob = 'Please select your date of birth'
+  } else {
+    const date = new Date(dob.value)
+    const today = new Date()
+    const minDate = new Date('1900-01-01')
+    
+    if (date > today) {
+        errors.value.dob = 'Date of birth cannot be in the future'
+    } else if (date < minDate) {
+        errors.value.dob = 'Please enter a valid date after 1900'
+    }
   }
 
+  // Gender
   if (!gender.value) {
-    errors.value.gender = 'Gender is required'
+    errors.value.gender = 'Please select your gender'
   }
 
+  // Role
   if (!role.value) {
-    errors.value.role = 'Account Type is required'
+    errors.value.role = 'Please select your account type'
   }
 
+  // Password
   if (!password.value) {
-    errors.value.password = 'Password is required'
+    errors.value.password = 'Please enter a password'
   } else if (password.value.length < 8) {
-    errors.value.password = 'Password must be at least 8 characters'
+    errors.value.password = 'Password must be at least 8 characters long'
   } else if (!/[A-Z]/.test(password.value)) {
     errors.value.password = 'Password must contain at least one uppercase letter'
   } else if (!/[a-z]/.test(password.value)) {
@@ -68,6 +88,7 @@ const validate = () => {
     errors.value.password = 'Password must contain at least one symbol (!@#$%^&*)'
   }
 
+  // Confirm Password
   if (!confirmPassword.value) {
     errors.value.confirmPassword = 'Please confirm your password'
   } else if (confirmPassword.value !== password.value) {
@@ -76,6 +97,7 @@ const validate = () => {
   
   const isValid = Object.keys(errors.value).length === 0
   if (!isValid) {
+      // Show first error as toast for visibility, but inline errors handle the rest
       const firstError = Object.values(errors.value)[0]
       toast.error(firstError)
   }
